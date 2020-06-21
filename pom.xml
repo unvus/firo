@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <groupId>com.unvus.firo</groupId>
+    <artifactId>firo-parent</artifactId>
+    <version>0.0.1-SNAPSHOT</version>
+    <packaging>pom</packaging>
+    <name>firo - parent pom</name>
+
+    <distributionManagement>
+        <snapshotRepository>
+            <id>unvus-snapshots</id>
+            <url>https://repo.unvus.com/repository/maven-snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>unvus-releases</id>
+            <url>https://repo.unvus.com/repository/maven-releases</url>
+        </repository>
+    </distributionManagement>
+
+    <repositories>
+        <repository>
+            <id>unvus-public</id>
+            <url>https://repo.unvus.com/repository/maven-public</url>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+            <snapshots>
+                <enabled>true</enabled>
+                <updatePolicy>always</updatePolicy>
+            </snapshots>
+        </repository>
+    </repositories>
+
+    <pluginRepositories>
+        <pluginRepository>
+            <id>unvus-public</id>
+            <url>https://repo.unvus.com/repository/maven-public</url>
+        </pluginRepository>
+    </pluginRepositories>
+
+    <properties>
+        <java.version>1.8</java.version>
+        <lombok.version>1.18.2</lombok.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <unvus.version>1.3.0-SNAPSHOT</unvus.version>
+    </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>com.unvus</groupId>
+                <artifactId>unvus-dependencies</artifactId>
+                <version>${unvus.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <dependencies>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <version>${lombok.version}</version>
+        </dependency>
+    </dependencies>
+
+    <modules>
+        <module>firo-core</module>
+        <module>firo-embedded</module>
+    </modules>
+
+    <build>
+        <plugins>
+
+        </plugins>
+        <pluginManagement>
+            <plugins>
+
+            </plugins>
+        </pluginManagement>
+    </build>
+    <reporting>
+        <plugins>
+
+        </plugins>
+    </reporting>
+
+    <profiles>
+    </profiles>
+</project>

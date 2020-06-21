@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.unvus.firo</groupId>
+        <artifactId>firo-parent</artifactId>
+        <version>0.0.1-SNAPSHOT</version>
+        <relativePath>../pom.xml</relativePath>
+    </parent>
+
+    <artifactId>firo-core</artifactId>
+    <packaging>jar</packaging>
+    <name>firo - core</name>
+
+    <properties>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <metadata-extractor.version>2.14.0</metadata-extractor.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <tika.version>1.24.1</tika.version>
+    </properties>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.unvus</groupId>
+            <artifactId>unvus-util</artifactId>
+            <version>1.3.0-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.imageresizer4j</groupId>
+            <artifactId>imageresizer</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.imgscalr</groupId>
+            <artifactId>imgscalr-lib</artifactId>
+            <version>4.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.drewnoakes</groupId>
+            <artifactId>metadata-extractor</artifactId>
+            <version>${metadata-extractor.version}</version>
+        </dependency>
+    </dependencies>
+
+    <!-- 빌드 설정 -->
+    <build>
+
+    </build>
+
+</project>
