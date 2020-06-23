@@ -41,7 +41,7 @@ public class DatabaseConfiguration {
         return em;
     }
 
-    @Bean
+    @Bean(name = "firoDataSource")
     public DataSource dataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(databaseProperties.getDriverClassName());
@@ -52,14 +52,14 @@ public class DatabaseConfiguration {
     }
 
 
-    @Bean
+    @Bean(name = "firoTransactionManager")
     public PlatformTransactionManager transactionManager() {
         final JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
         return transactionManager;
     }
 
-    @Bean
+    @Bean(name = "firoExceptionTranslation")
     public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
     }
