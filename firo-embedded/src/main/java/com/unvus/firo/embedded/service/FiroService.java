@@ -17,6 +17,7 @@ import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -34,6 +35,7 @@ import java.util.stream.Collectors;
 
 import static com.unvus.firo.embedded.util.FiroWebUtil.FILE_SEP;
 
+@Service
 public class FiroService {
 
     public final static String CACHE_LIST_ATTACH_BY_REF = "AttachService.listAttachByRef";
@@ -311,7 +313,7 @@ public class FiroService {
                     if(t.exists()) {
                         t.delete();
                     }
-                    firoRepository.deleteAttach(attach.getId());
+                    firoRepository.deleteById(attach.getId());
                 }else {
                     throw new InvalidPathException("", "No path specified");
                 }
@@ -339,16 +341,6 @@ public class FiroService {
     }
 
     /**
-     *  카운트 조회
-     * @param param
-     * @return
-     */
-    @Transactional(readOnly = true)
-    public int listAttachCnt(Map<String, Object> param) {
-        return firoRepository.listAttachCnt(param);
-    }
-
-    /**
      *  목록 조회
      * @param param
      * @return
@@ -362,11 +354,8 @@ public class FiroService {
 
     @Transactional(readOnly = true)
     public int listAttachCntByRef(String refTarget, Long refTargetKey, String refTargetType) {
-        Map<String, Object> param = new HashMap();
-        param.put("refTarget", refTarget);
-        param.put("refTargetKey", refTargetKey);
-        param.put("refTargetType", refTargetType);
-        return firoRepository.listAttachCnt(param);
+
+        return firoRepository.listAttachCnt(refTarget, refTargetKey, refTargetType);
     }
 
     public List<FiroFile> listAttachByRef(String refTarget, Long refTargetKey, String refTargetType) {

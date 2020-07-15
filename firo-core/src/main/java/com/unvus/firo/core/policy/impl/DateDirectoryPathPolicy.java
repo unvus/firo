@@ -1,7 +1,6 @@
 package com.unvus.firo.core.policy.impl;
 
 
-import com.unvus.firo.core.domain.FiroCabinet;
 import com.unvus.firo.core.policy.DirectoryPathPolicy;
 import com.unvus.util.DateUtils;
 
@@ -12,7 +11,7 @@ import java.time.LocalDateTime;
  * Created by guava on 16.8.12.
  */
 public class DateDirectoryPathPolicy implements DirectoryPathPolicy {
-    public static final String FILE_SEP = System.getProperty("file.separator");
+    public static String FILE_SEP = System.getProperty("file.separator");
 
     public enum DATE_SUBDIR_TYPE {
         YYYY("yyyy"), YYYY_MM("yyyy" + FILE_SEP + "MM"), YYYY_MM_DD("yyyy" + FILE_SEP + "MM" + FILE_SEP + "dd");

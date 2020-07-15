@@ -1,7 +1,5 @@
 package com.unvus.firo.core.policy;
 
-import com.unvus.firo.core.domain.FiroCabinet;
-
 /**
  * Created by guava on 16.8.12.
  */

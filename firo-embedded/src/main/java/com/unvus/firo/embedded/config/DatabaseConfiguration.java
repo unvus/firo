@@ -2,10 +2,13 @@ package com.unvus.firo.embedded.config;
 
 import com.unvus.firo.embedded.config.properties.DatabaseProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
 import org.springframework.dao.annotation.PersistenceExceptionTranslationPostProcessor;
+import org.springframework.data.jpa.repository.config.EnableJpaRepositories;
 import org.springframework.jdbc.datasource.DriverManagerDataSource;
 import org.springframework.orm.jpa.JpaTransactionManager;
 import org.springframework.orm.jpa.JpaVendorAdapter;
@@ -18,6 +21,11 @@ import java.util.Properties;
 
 @Slf4j
 @Configuration
+@EnableJpaRepositories(
+    basePackages = "com.unvus.firo.embedded",
+    entityManagerFactoryRef = "firoEntityManagerFactory",
+    transactionManagerRef = "firoTransactionManager"
+)
 public class DatabaseConfiguration {
 
     private final Environment env;
@@ -29,9 +37,9 @@ public class DatabaseConfiguration {
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+    public LocalContainerEntityManagerFactoryBean firoEntityManagerFactory() {
         final LocalContainerEntityManagerFactoryBean em = new LocalContainerEntityManagerFactoryBean();
-        em.setDataSource(dataSource());
+        em.setDataSource(firoDataSource());
         em.setPackagesToScan("com.unvus.firo.embedded");
 
         final JpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
@@ -41,8 +49,9 @@ public class DatabaseConfiguration {
         return em;
     }
 
-    @Bean(name = "firoDataSource")
-    public DataSource dataSource(){
+    @Bean
+    @ConditionalOnMissingBean(name = "firoDataSource")
+    public DataSource firoDataSource(){
         DriverManagerDataSource dataSource = new DriverManagerDataSource();
         dataSource.setDriverClassName(databaseProperties.getDriverClassName());
         dataSource.setUrl(databaseProperties.getUrl());
@@ -53,21 +62,21 @@ public class DatabaseConfiguration {
 
 
     @Bean(name = "firoTransactionManager")
-    public PlatformTransactionManager transactionManager() {
+    public PlatformTransactionManager firoTransactionManager() {
         final JpaTransactionManager transactionManager = new JpaTransactionManager();
-        transactionManager.setEntityManagerFactory(entityManagerFactory().getObject());
+        transactionManager.setEntityManagerFactory(firoEntityManagerFactory().getObject());
         return transactionManager;
     }
 
     @Bean(name = "firoExceptionTranslation")
-    public PersistenceExceptionTranslationPostProcessor exceptionTranslation() {
+    public PersistenceExceptionTranslationPostProcessor firoExceptionTranslation() {
         return new PersistenceExceptionTranslationPostProcessor();
     }
 
     final Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto"));
-        hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect"));
+        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("hibernate.hbm2ddl.auto", "update"));
+        hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect"));
         hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", "false");
         return hibernateProperties;
     }
