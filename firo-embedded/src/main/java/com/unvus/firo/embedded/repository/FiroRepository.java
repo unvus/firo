@@ -13,7 +13,7 @@ import java.util.Map;
  * https://stackoverflow.com/questions/46742322/query-creation-using-dynamic-filter-map-in-querydsl-and-spring-data-jpa
  */
 @Repository
-public interface FiroRepository extends JpaRepository<FiroFile, Long>  {
+public interface FiroRepository extends JpaRepository<FiroFile, Long>, FiroRepositoryCustom {
 
     @Query(
         "SELECT COUNT(f) FROM FiroFile f " +

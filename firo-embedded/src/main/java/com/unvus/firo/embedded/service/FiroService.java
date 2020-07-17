@@ -8,6 +8,7 @@ import com.unvus.firo.core.filter.FiroFilterChain;
 import com.unvus.firo.core.policy.DirectoryPathPolicy;
 import com.unvus.firo.embedded.domain.AttachBag;
 import com.unvus.firo.embedded.domain.FiroFile;
+import com.unvus.firo.embedded.domain.QFiroFile;
 import com.unvus.firo.embedded.repository.FiroRepository;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
