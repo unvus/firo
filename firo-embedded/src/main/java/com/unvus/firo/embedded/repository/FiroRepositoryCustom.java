@@ -8,4 +8,5 @@ import java.util.Map;
 public interface FiroRepositoryCustom {
 
     List<FiroFile> listAttach(Map<String, Object> params);
+    long listAttachCnt(Map<String, Object> params);
 }

@@ -10,6 +10,7 @@ import com.unvus.firo.embedded.domain.AttachBag;
 import com.unvus.firo.embedded.domain.FiroFile;
 import com.unvus.firo.embedded.domain.QFiroFile;
 import com.unvus.firo.embedded.repository.FiroRepository;
+import com.unvus.util.FieldMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -249,7 +250,7 @@ public class FiroService {
         String fileType = detectFile(file);
         attach.setFileType(fileType);
 
-        firoRepository.insertAttach(attach);
+        firoRepository.save(attach);
 
         return attach;
     }
@@ -298,10 +299,10 @@ public class FiroService {
         }
     }
 
-    public int updateAttach(FiroFile attach) {
-        int cnt = firoRepository.updateAttach(attach);
+    public FiroFile updateAttach(FiroFile attach) {
+        firoRepository.save(attach);
 
-        return cnt;
+        return attach;
     }
 
 
@@ -314,7 +315,7 @@ public class FiroService {
                     if(t.exists()) {
                         t.delete();
                     }
-                    firoRepository.deleteById(attach.getId());
+                    firoRepository.delete(attach);
                 }else {
                     throw new InvalidPathException("", "No path specified");
                 }
@@ -354,9 +355,10 @@ public class FiroService {
     }
 
     @Transactional(readOnly = true)
-    public int listAttachCntByRef(String refTarget, Long refTargetKey, String refTargetType) {
+    public long listAttachCntByRef(String refTarget, Long refTargetKey, String refTargetType) {
 
-        return firoRepository.listAttachCnt(refTarget, refTargetKey, refTargetType);
+        Map<String, Object> fieldMap = new HashMap<>();
+        return firoRepository.listAttachCnt(fieldMap);
     }
 
     public List<FiroFile> listAttachByRef(String refTarget, Long refTargetKey, String refTargetType) {
