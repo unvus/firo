@@ -22,7 +22,7 @@ public class FiroRepositoryImpl extends QuerydslRepositorySupport implements Fir
 
     @Override
     public List<FiroFile> listAttach(Map<String, Object> params) {
-        QFiroFile firoFile = QFiroFile.firoFile;
+        QFiroFile firoFile = new QFiroFile("ff");
         JPQLQuery query = from(firoFile);
         BooleanBuilder builder = getBooleanBuilder(params);
 
@@ -32,7 +32,7 @@ public class FiroRepositoryImpl extends QuerydslRepositorySupport implements Fir
 
     @Override
     public long listAttachCnt(Map<String, Object> params) {
-        QFiroFile firoFile = QFiroFile.firoFile;
+        QFiroFile firoFile = new QFiroFile("ff");
         JPQLQuery query = from(firoFile);
         BooleanBuilder builder = getBooleanBuilder(params);
 
