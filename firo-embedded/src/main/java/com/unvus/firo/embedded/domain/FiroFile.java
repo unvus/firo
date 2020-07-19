@@ -80,7 +80,7 @@ public class FiroFile {
      */
     @NotNull
     @Column(nullable = false)
-    protected Boolean deleted;
+    protected Boolean deleted = false;
 
     /**
      * 확장컬럼

@@ -5,7 +5,16 @@ import java.util.HashMap;
 import java.util.List;
 
 public class AttachBag extends HashMap<String, List<FiroFile>> implements Serializable {
+
     private String roomCode;
+
+
+    public AttachBag() {
+    }
+
+    public AttachBag(String roomCode) {
+        this.roomCode = roomCode;
+    }
 
     public void setRoomCode(String roomCode) {
         this.roomCode = roomCode;

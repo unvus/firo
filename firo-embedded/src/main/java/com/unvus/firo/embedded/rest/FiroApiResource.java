@@ -6,13 +6,10 @@ import com.unvus.firo.core.FiroFilterRegistry;
 import com.unvus.firo.core.FiroRoomRegistry;
 import com.unvus.firo.core.filter.FiroFilter;
 import com.unvus.firo.core.filter.FiroFilterChain;
-import com.unvus.firo.embedded.config.properties.FiroProperties;
 import com.unvus.firo.embedded.domain.AttachBag;
 import com.unvus.firo.embedded.domain.FiroFile;
 import com.unvus.firo.embedded.service.FiroService;
-import com.unvus.util.LfuCache;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.cache.CacheManager;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -22,7 +19,6 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
-import java.awt.image.BufferedImage;
 import java.util.*;
 
 @Slf4j
@@ -147,8 +143,8 @@ public class FiroApiResource {
     @GetMapping(value = "/attach/{roomName}/{roomKey}",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AttachBag> getAttach(HttpServletRequest request,
-                                               @PathVariable("roomName") String refType,
-                                               @PathVariable("roomKey") Long refKey) {
+                                                     @PathVariable("roomName") String refType,
+                                                     @PathVariable("roomKey") Long refKey) {
 
         return getAttach(request, refType, refKey, null, null);
     }
@@ -163,10 +159,10 @@ public class FiroApiResource {
     @GetMapping(value = "/attach/{roomName}/{roomKey}/{cabinetName}",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AttachBag> getAttach(HttpServletRequest request,
-                                               @PathVariable("roomName") String refType,
-                                               @PathVariable("roomKey") Long refKey,
-                                               @PathVariable("cabinetName") String cabinetName,
-                                               @RequestParam(value="q", required = false) Map<String, Object> param) {
+                                                     @PathVariable("roomName") String refType,
+                                                     @PathVariable("roomKey") Long refKey,
+                                                     @PathVariable("cabinetName") String cabinetName,
+                                                     @RequestParam(value="q", required = false) Map<String, Object> param) {
         if(param != null && param.containsKey("roomKeys")){
             refKey = null;
         }

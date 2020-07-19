@@ -26,7 +26,7 @@ public class FiroProperties {
     @Setter
     public static class Directory {
         private String tmpDir = System.getProperty("java.io.tmpdir");
-        private String baseDir = System.getProperty("java.class.path");
+        private String baseDir = System.getProperty("java.io.tmpdir");
     }
 
 }

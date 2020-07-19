@@ -8,9 +8,7 @@ import com.unvus.firo.core.filter.FiroFilterChain;
 import com.unvus.firo.core.policy.DirectoryPathPolicy;
 import com.unvus.firo.embedded.domain.AttachBag;
 import com.unvus.firo.embedded.domain.FiroFile;
-import com.unvus.firo.embedded.domain.QFiroFile;
 import com.unvus.firo.embedded.repository.FiroRepository;
-import com.unvus.util.FieldMap;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -97,7 +95,9 @@ public class FiroService {
                         if(cabinet == null) {
                             RoomService.addCabinet(firoRoom, cabinetName);
                         }else {
-                            cabinet.getFilterChain().startFilter(path.toFile());
+                            if(cabinet.getFilterChain() != null && cabinet.getFilterChain().size() > 0) {
+                                cabinet.getFilterChain().startFilter(path.toFile());
+                            }
                         }
                     }else {
                         filterChain.startFilter(path.toFile());
@@ -395,7 +395,7 @@ public class FiroService {
         }
         List<FiroFile> list = firoRepository.listAttach(param);
 
-        AttachBag bag = new AttachBag();
+        AttachBag bag = new AttachBag(refTarget);
 
         if(CollectionUtils.isNotEmpty(list)) {
             for(FiroFile attach : list) {
@@ -419,7 +419,7 @@ public class FiroService {
 
         for(FiroFile attach : list) {
             if(!result.containsKey(attach.getRefTargetKey())) {
-                result.put(attach.getRefTargetKey(), new AttachBag());
+                result.put(attach.getRefTargetKey(), new AttachBag(refTarget));
             }
             AttachBag bag = result.get(attach.getRefTargetKey());
             if(!bag.containsKey(attach.getRefTargetType())) {

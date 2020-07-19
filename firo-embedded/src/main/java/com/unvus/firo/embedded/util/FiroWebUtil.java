@@ -1,9 +1,13 @@
 package com.unvus.firo.embedded.util;
 
 import org.apache.tika.io.IOUtils;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import javax.imageio.ImageIO;
+import javax.servlet.ServletRequest;
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletRequestWrapper;
 import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
@@ -112,5 +116,25 @@ public class FiroWebUtil {
 
         ImageIO.write(sourceImage, fileType, output);
         g2d.dispose();
+    }
+
+    public static HttpServletRequest request() {
+        return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getRequest();
+    }
+
+    public static HttpServletResponse response() {
+        return ((ServletRequestAttributes) RequestContextHolder.currentRequestAttributes()).getResponse();
+    }
+
+    public static HttpServletRequest extractRequest(Class<? extends HttpServletRequest> requestClass, ServletRequest request) {
+
+        if(requestClass.isInstance(request)) {
+            return (HttpServletRequest)request;
+        }else if(request instanceof HttpServletRequestWrapper) {
+            return extractRequest(requestClass, ((HttpServletRequestWrapper)request).getRequest());
+        }else {
+            return null;
+        }
+
     }
 }
