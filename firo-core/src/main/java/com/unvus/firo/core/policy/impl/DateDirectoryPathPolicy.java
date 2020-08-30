@@ -1,8 +1,7 @@
 package com.unvus.firo.core.policy.impl;
 
-
 import com.unvus.firo.core.policy.DirectoryPathPolicy;
-import com.unvus.util.DateUtils;
+import com.unvus.util.DateTools;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -66,9 +65,9 @@ public class DateDirectoryPathPolicy implements DirectoryPathPolicy {
         String dir;
 
         if(date instanceof LocalDateTime) {
-            dir = DateUtils.format((LocalDateTime) date, this.dateSubDirType.getFormat());
+            dir = DateTools.format((LocalDateTime) date, this.dateSubDirType.getFormat());
         }else if(date instanceof LocalDate) {
-            dir = DateUtils.format((LocalDate) date, this.dateSubDirType.getFormat());
+            dir = DateTools.format((LocalDate) date, this.dateSubDirType.getFormat());
         }else {
             throw new RuntimeException("date parameter must be instance of LocalDate or LocalDateTime.");
         }
