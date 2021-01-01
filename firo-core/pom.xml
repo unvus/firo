@@ -6,7 +6,7 @@
     <parent>
         <groupId>com.unvus.firo</groupId>
         <artifactId>firo-parent</artifactId>
-        <version>0.0.1-SNAPSHOT</version>
+        <version>0.0.1-juvis-SNAPSHOT</version>
         <relativePath>../pom.xml</relativePath>
     </parent>
 
@@ -26,7 +26,7 @@
         <dependency>
             <groupId>com.unvus</groupId>
             <artifactId>unvus-util</artifactId>
-            <version>1.3.0-SNAPSHOT</version>
+            <version>1.4.0-juvis-SNAPSHOT</version>
         </dependency>
 
         <dependency>
