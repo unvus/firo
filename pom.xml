@@ -18,19 +18,19 @@
 
     <distributionManagement>
         <snapshotRepository>
-            <id>unvus-snapshots</id>
-            <url>https://repo.unvus.com/repository/maven-snapshots</url>
+            <id>wylie-snapshots</id>
+            <url>https://repo.wylie.co.kr/repository/maven-snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>unvus-releases</id>
-            <url>https://repo.unvus.com/repository/maven-releases</url>
+            <id>wylie-releases</id>
+            <url>https://repo.wylie.co.kr/repository/maven-releases</url>
         </repository>
     </distributionManagement>
 
     <repositories>
         <repository>
-            <id>unvus-public</id>
-            <url>https://repo.unvus.com/repository/maven-public</url>
+            <id>wylie-public</id>
+            <url>https://repo.wylie.co.kr/repository/maven-public</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -43,8 +43,8 @@
 
     <pluginRepositories>
         <pluginRepository>
-            <id>unvus-public</id>
-            <url>https://repo.unvus.com/repository/maven-public</url>
+            <id>wylie-public</id>
+            <url>https://repo.wylie.co.kr/repository/maven-public</url>
         </pluginRepository>
     </pluginRepositories>
 
