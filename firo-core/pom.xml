@@ -51,6 +51,7 @@
             <groupId>com.drewnoakes</groupId>
             <artifactId>metadata-extractor</artifactId>
             <version>${metadata-extractor.version}</version>
+            <optional>true</optional>
         </dependency>
     </dependencies>
 
