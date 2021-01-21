@@ -5,6 +5,7 @@ import com.unvus.firo.core.policy.DirectoryPathPolicy;
 import com.unvus.firo.core.policy.impl.DateDirectoryPathPolicy;
 import com.unvus.firo.embedded.config.properties.FiroProperties;
 import com.unvus.util.JsonUtil;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -33,6 +34,7 @@ public class FiroConfiguration {
     }
 
     @Bean
+    @ConditionalOnMissingBean(JsonUtil.class)
     public JsonUtil jsonUtil() {
         JsonUtil jsonUtil = new JsonUtil();
         jsonUtil.setMapper(objectMapper);
