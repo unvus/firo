@@ -45,10 +45,6 @@ public class FiroAssetResource {
 
     private static LfuCache<Object, Object> nullCache = new LfuCache(10000l, 300l, true);
 
-    public static final String CKEDITOR_RESULT =
-        "<script type=\"text/javascript\">" +
-            "window.parent.CKEDITOR.tools.callFunction(%s, '%s');" +
-            "</script>";
 
     public FiroAssetResource(ObjectMapper objectMapper, FiroService firoService, FiroProperties firoProperties) {
         this.firoService = firoService;
@@ -99,7 +95,7 @@ public class FiroAssetResource {
             result = f;
         }
 
-        writeFileToClient(response, isDownload, dateFormat, attach.getDisplayName(), result, contentType);
+        FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, attach.getDisplayName(), result, contentType);
     }
 
     @GetMapping(value = "/attachTemp/{action:view|download}/{id}")
@@ -131,9 +127,9 @@ public class FiroAssetResource {
         File tf = convertScaledImage(width, height, null, f, contentType);
 
         if(tf == null) {
-            writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), f, contentType);
+            FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), f, contentType);
         }else {
-            writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), tf, contentType);
+            FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), tf, contentType);
         }
 
     }
@@ -265,7 +261,7 @@ public class FiroAssetResource {
             result = f;
         }
 
-        writeFileToClient(response, isDownload, dateFormat, attach.getDisplayName(), result, contentType);
+        FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, attach.getDisplayName(), result, contentType);
 
     }
 
@@ -342,70 +338,6 @@ public class FiroAssetResource {
         }
 
         return tf;
-    }
-
-
-    @RequestMapping(
-        value="/ckupload/modal",
-        produces    = MediaType.TEXT_HTML_VALUE)
-    @ResponseBody
-    public String upload(MultipartFile upload, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String filename = firoService.uploadEditorImage(upload, null, "ckupload");
-
-        // dialog
-        response.setContentType("text/html;charset=UTF-8");
-        return String.format(CKEDITOR_RESULT, request.getParameter("CKEditorFuncNum"), "/assets/editor/image" + filename);
-
-    }
-
-    @RequestMapping("/editor/image/**")
-    public void imageDown(HttpServletRequest request, HttpServletResponse response) throws Exception {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-
-        if (!FiroWebUtil.needFreshResponse(request, dateFormat)) {
-            response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
-            return;
-        }
-
-        String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
-
-        filePath = StringUtils.substringAfter(filePath, "/assets/editor/image");
-        String baseDir = firoService.getBaseDir() + FILE_SEP + "ckeditor";
-
-        File f = new File(baseDir + filePath);
-
-        if(!f.exists()) {
-            return;
-        }
-
-        writeFileToClient(response, false, dateFormat, null, f, firoService.detectFile(f));
-    }
-
-    private void writeFileToClient(HttpServletResponse response, boolean isDownload, SimpleDateFormat dateFormat, String displayName, File f, String contentType) throws Exception {
-        writeFileToClient(response, isDownload, dateFormat, displayName, f, contentType, null);
-    }
-
-    private void writeFileToClient(HttpServletResponse response, boolean isDownload, SimpleDateFormat dateFormat, String displayName, File f, String contentType, BufferedImage waterMarkImage) throws Exception {
-        response.setContentType(contentType);
-
-        if (isDownload) {
-            response.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(displayName, "UTF-8") + "\"");
-        } else {
-            FiroWebUtil.setCacheHeader(response, dateFormat);
-        }
-
-        String[] contentTypeArr = StringUtils.split(contentType, "/");
-        if(waterMarkImage != null && contentTypeArr.length == 2 && "image".equals(contentTypeArr[0])) {
-            File waterMarkedFile = File.createTempFile("watermark_", "_tmp", new File(firoProperties.getDirectory().getTmpDir()));
-            FiroWebUtil.writeFileWithWatermark(f, waterMarkImage, waterMarkedFile, contentTypeArr[1]);
-
-            response.setContentLength((int) waterMarkedFile.length());
-            FiroWebUtil.writeFile(response, waterMarkedFile);
-        }else {
-            response.setContentLength((int) f.length());
-            FiroWebUtil.writeFile(response, f);
-        }
     }
 
     private SimpleDateFormat getCacheDateFormat() {

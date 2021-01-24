@@ -1,5 +1,6 @@
 package com.unvus.firo.embedded.util;
 
+import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.io.IOUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
@@ -14,6 +15,7 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
@@ -136,5 +138,32 @@ public class FiroWebUtil {
             return null;
         }
 
+    }
+
+
+    public static void writeFileToClient(HttpServletResponse response, boolean isDownload, SimpleDateFormat dateFormat, String displayName, File f, String contentType) throws Exception {
+        writeFileToClient(response, isDownload, dateFormat, displayName, f, contentType, null, null);
+    }
+
+    public static void writeFileToClient(HttpServletResponse response, boolean isDownload, SimpleDateFormat dateFormat, String displayName, File f, String contentType, BufferedImage waterMarkImage, String tmpDir) throws Exception {
+        response.setContentType(contentType);
+
+        if (isDownload) {
+            response.setHeader("Content-Disposition", "attachment; filename=\"" + URLEncoder.encode(displayName, "UTF-8") + "\"");
+        } else {
+            FiroWebUtil.setCacheHeader(response, dateFormat);
+        }
+
+        String[] contentTypeArr = StringUtils.split(contentType, "/");
+        if (waterMarkImage != null && contentTypeArr.length == 2 && "image".equals(contentTypeArr[0])) {
+            File waterMarkedFile = File.createTempFile("watermark_", "_tmp", new File(tmpDir));
+            FiroWebUtil.writeFileWithWatermark(f, waterMarkImage, waterMarkedFile, contentTypeArr[1]);
+
+            response.setContentLength((int) waterMarkedFile.length());
+            FiroWebUtil.writeFile(response, waterMarkedFile);
+        } else {
+            response.setContentLength((int) f.length());
+            FiroWebUtil.writeFile(response, f);
+        }
     }
 }

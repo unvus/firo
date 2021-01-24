@@ -177,24 +177,6 @@ public class FiroApiResource {
     }
 
 
-
-    @RequestMapping(
-        value="/ckupload/drop",
-        produces    = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> ckUploadDrop(MultipartFile upload, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String filename = firoService.uploadEditorImage(upload, null, "ckupload");
-
-        // drag & drop
-        Map<String, Object> resultMap = new HashMap<>();
-        resultMap.put("fileName", "");
-        resultMap.put("uploaded", 1);
-        resultMap.put("url", "/assets/editor/image" + filename);
-
-        return new ResponseEntity<>(resultMap, HttpStatus.OK);
-
-    }
-
-
     @PostMapping("/attach/copy/{roomName}/{roomKey}/{cabinetName}")
     public ResponseEntity<Object> imageCopy(
         @PathVariable("roomName") String refType,
