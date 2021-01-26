@@ -6,25 +6,24 @@ import com.unvus.firo.core.domain.FiroRoom;
 import com.unvus.firo.core.domain.RoomService;
 import com.unvus.firo.core.filter.FiroFilterChain;
 import com.unvus.firo.core.policy.DirectoryPathPolicy;
+import com.unvus.firo.embedded.channel.adapter.Adapter;
+import com.unvus.firo.embedded.channel.endpoint.enums.EndpointType;
 import com.unvus.firo.embedded.domain.AttachBag;
 import com.unvus.firo.embedded.domain.FiroFile;
 import com.unvus.firo.embedded.repository.FiroRepository;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
-import java.io.File;
-import java.io.FileNotFoundException;
-import java.io.IOException;
-import java.io.InputStream;
+import java.io.*;
 import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Path;
@@ -35,12 +34,13 @@ import java.util.stream.Collectors;
 
 import static com.unvus.firo.embedded.util.FiroWebUtil.FILE_SEP;
 
+@Slf4j
 @Service
 public class FiroService {
 
     public final static String CACHE_LIST_ATTACH_BY_REF = "AttachService.listAttachByRef";
 
-    private final Logger log = LoggerFactory.getLogger(FiroService.class);
+//    private final PluginRegistry<Adapter, EndpointType> adapterPluginRegistry;
 
     public final static String DELETED_MAP_CODE = "_deleted";
 
@@ -51,6 +51,7 @@ public class FiroService {
     private static Tika tika = new Tika();
 
     public FiroService(DirectoryPathPolicy directoryPathPolicy, FiroRepository attachRepository) {
+//        this.adapterPluginRegistry = adapterPluginRegistry;
         this.directoryPathPolicy    = directoryPathPolicy;
         this.firoRepository = attachRepository;
     }
@@ -154,15 +155,11 @@ public class FiroService {
                         clearAttachByRoom(bag.getRoomCode(), roomKey);
                         cleared = true;
                     }
+                    File inputFile = Paths.get(directoryPathPolicy.getTempDir(), attach.getSavedName()).toFile();
+//                    InputStream is = Files.newInputStream(Paths.get(directoryPathPolicy.getTempDir(), attach.getSavedName()));
 
-                    InputStream is = Files.newInputStream(Paths.get(directoryPathPolicy.getTempDir(), attach.getSavedName()));
+                    FiroFile newAttach = persistFile(bag.getRoomCode(), roomKey, mapCode, attach.getDisplayName(), saveDir, inputFile, attach.getExt());
 
-                    FiroFile newAttach;
-                    if (attach.getExt() == null || attach.getExt().equals("")) {
-                        newAttach = persistFile(bag.getRoomCode(), roomKey, mapCode, attach.getDisplayName(), saveDir, is);
-                    } else {
-                        newAttach = persistFile(bag.getRoomCode(), roomKey, mapCode, attach.getDisplayName(), saveDir, is, attach.getExt());
-                    }
                     newAttachList.add(newAttach);
                 }
             }
@@ -203,12 +200,14 @@ public class FiroService {
                 continue;
             }
             try {
-                InputStream is = Files.newInputStream(Paths.get(directoryPathPolicy.getBaseDir() + attach.getSavedDir(), attach.getSavedName()));
+
+                File inputFile = Paths.get(directoryPathPolicy.getBaseDir() + attach.getSavedDir(), attach.getSavedName()).toFile();
+//                InputStream is = Files.newInputStream(Paths.get(directoryPathPolicy.getBaseDir() + attach.getSavedDir(), attach.getSavedName()));
                 String mapCode = attach.getRefTargetType();
 
                 String saveDir = directoryPathPolicy.getFullDir(fileRoom.getCode(), mapCode);
 
-                FiroFile newAttach = persistFile(fileRoom.getCode(), newRoomKey, mapCode, attach.getDisplayName(), saveDir, is, "10");
+                FiroFile newAttach = persistFile(fileRoom.getCode(), newRoomKey, mapCode, attach.getDisplayName(), saveDir, inputFile, "10");
             }catch(Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -217,11 +216,8 @@ public class FiroService {
 
     }
 
-    public FiroFile persistFile(String refTarget, Long refTargetKey, String refTargetType, String displayName, String saveDir, InputStream is) throws Exception {
-        return persistFile(refTarget, refTargetKey, refTargetType, displayName, saveDir, is, null);
-    }
 
-    public FiroFile persistFile(String refTarget, Long refTargetKey, String refTargetType, String displayName, String saveDir, InputStream is, String ext) throws Exception {
+    public FiroFile persistFile(String refTarget, Long refTargetKey, String refTargetType, String displayName, String saveDir, File inputFile, String ext) throws Exception {
         createDirectoryIfNotExists(saveDir);
 
         String extension = StringUtils.substringAfterLast(displayName, ".");
@@ -233,8 +229,10 @@ public class FiroService {
 
         String uniqueName = getUniqueFileName(saveDir, fileName);
 
-        Long size = Files.copy(is, Paths.get(saveDir, uniqueName));
+        String fileType = detectFile(inputFile);
 
+        Long size = Files.copy(new FileInputStream(inputFile), Paths.get(saveDir, uniqueName));
+//        getAdapterInstance(null).upload();
         FiroFile attach = new FiroFile();
         attach.setRefTarget(refTarget);
         attach.setRefTargetKey(refTargetKey);
@@ -243,13 +241,10 @@ public class FiroService {
         attach.setSavedName(uniqueName);
         attach.setSavedDir(StringUtils.removeStart(saveDir, directoryPathPolicy.getBaseDir()));
         attach.setFileSize(size);
+        attach.setFileType(fileType);
         attach.setAccessCnt(0);
         attach.setExt(ext);
         attach.setCreatedDt(LocalDateTime.now());
-
-        File file = new File(directoryPathPolicy.getBaseDir() + attach.getSavedDir() + attach.getSavedName());
-        String fileType = detectFile(file);
-        attach.setFileType(fileType);
 
         firoRepository.save(attach);
 
@@ -514,5 +509,9 @@ public class FiroService {
         return directoryPathPolicy.getBaseDir();
     }
 
+//    private Adapter getAdapterInstance(EndpointType endpointType) {
+//        Adapter adapter = adapterPluginRegistry.getPluginFor(endpointType).get();
+//        return adapter;
+//    }
 
 }
