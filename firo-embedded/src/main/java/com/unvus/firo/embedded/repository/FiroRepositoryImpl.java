@@ -46,7 +46,9 @@ public class FiroRepositoryImpl extends QuerydslRepositorySupport implements Fir
         PathBuilder<FiroFile> path = new PathBuilder<>(FiroFile.class, "ff");
         if(params != null && !params.isEmpty()) {
             for (Map.Entry<String, Object> entry : params.entrySet()) {
-                builder.and(path.get(entry.getKey()).eq(entry.getValue()));
+                if(entry.getValue() != null) {
+                    builder.and(path.get(entry.getKey()).eq(entry.getValue()));
+                }
             }
         }
 
