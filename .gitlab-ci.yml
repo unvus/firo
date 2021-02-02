@@ -1,0 +1,25 @@
+image: cschockaert/docker-npm-maven
+
+variables:
+  DOCKER_DRIVER: overlay
+  DOCKER_HOST: tcp://unvus.com:18082
+
+
+cache:
+  untracked: true
+  key: "$CI_PROJECT_NAME"
+  paths:
+    - node_modules
+    - target
+
+services:
+  - docker:dind
+
+stages:
+  - deploy
+
+deploy-unvus:
+  stage: deploy
+  script:
+    - mvn clean deploy -B -e -Dmaven.test.skip=true -Pwylie
+
