@@ -2,8 +2,9 @@ package com.unvus.firo.embedded.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.imageresize4j.ImageResizeProcessor;
+import com.unvus.firo.core.FiroRegistry;
+import com.unvus.firo.core.domain.FiroCabinet;
 import com.unvus.firo.core.util.ImageResizeUtil;
-
 import com.unvus.firo.embedded.config.properties.FiroProperties;
 import com.unvus.firo.embedded.domain.FiroFile;
 import com.unvus.firo.embedded.service.FiroService;
@@ -12,11 +13,7 @@ import com.unvus.util.LfuCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.cache.CacheManager;
-import org.springframework.http.MediaType;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
-import org.springframework.web.servlet.HandlerMapping;
 
 import javax.imageio.ImageIO;
 import javax.servlet.http.HttpServletRequest;
@@ -24,15 +21,13 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
-import java.net.URLEncoder;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.SimpleDateFormat;
-import java.util.*;
+import java.util.Arrays;
 import java.util.List;
-
-import static com.unvus.firo.embedded.util.FiroWebUtil.FILE_SEP;
+import java.util.TimeZone;
 
 @Slf4j
 @RestController
@@ -80,9 +75,12 @@ public class FiroAssetResource {
             return;
         }
 
-        File f = new File(firoProperties.getDirectory().getBaseDir() + attach.getSavedDir() + attach.getSavedName());
+        FiroCabinet cabinet = FiroRegistry.get(attach.getRefTarget(), attach.getRefTargetType());
 
-        if (!f.exists()) {
+        File f = cabinet.read(attach.getSavedDir() + attach.getSavedName());
+//        File f = new File(firoProperties.getDirectory().getBaseDir() + attach.getSavedDir() + attach.getSavedName());
+
+        if (f == null) {
             return;
         }
 
@@ -98,8 +96,10 @@ public class FiroAssetResource {
         FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, attach.getDisplayName(), result, contentType);
     }
 
-    @GetMapping(value = "/attachTemp/{action:view|download}/{id}")
+    @GetMapping(value = "/attachTemp/{action:view|download}/{roomCode}/{cabinetCode}/{id}")
     public void viewTemp(@PathVariable("action") String action,
+                         @PathVariable("roomCode") String roomCode,
+                         @PathVariable("cabinetCode") String cabinetCode,
                          @PathVariable("id") String id,
                          @RequestParam(value="w", required = false) Integer width,
                          @RequestParam(value="h", required = false) Integer height,
@@ -115,10 +115,11 @@ public class FiroAssetResource {
             return;
         }
 
+        FiroCabinet cabinet = FiroRegistry.get(roomCode, cabinetCode);
 
-        File f = new File(firoProperties.getDirectory().getTmpDir(), id);
+        File f = cabinet.readTemp(id);
 
-        if (!f.exists()) {
+        if (f == null) {
             return;
         }
 
@@ -246,7 +247,9 @@ public class FiroAssetResource {
             return;
         }
 
-        File f = new File(firoProperties.getDirectory().getBaseDir() + attach.getSavedDir() + attach.getSavedName());
+        FiroCabinet cabinet = FiroRegistry.get(refType, mapCode);
+
+        File f = cabinet.read(attach.getSavedDir() + attach.getSavedName());
 
         if (!f.exists()) {
             return;
@@ -295,6 +298,7 @@ public class FiroAssetResource {
                         return tf;
                     }
                 }else {
+                    // temp 파일에 scale 을 적용 할 경우
                     tf = File.createTempFile("scaled_", "_tmp", new File(firoProperties.getDirectory().getTmpDir()));
                 }
 

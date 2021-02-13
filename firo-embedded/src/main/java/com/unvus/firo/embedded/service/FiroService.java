@@ -1,13 +1,9 @@
 package com.unvus.firo.embedded.service;
 
-import com.unvus.firo.core.FiroRoomRegistry;
+import com.unvus.firo.core.FiroRegistry;
 import com.unvus.firo.core.domain.FiroCabinet;
 import com.unvus.firo.core.domain.FiroRoom;
-import com.unvus.firo.core.domain.RoomService;
 import com.unvus.firo.core.filter.FiroFilterChain;
-import com.unvus.firo.core.policy.DirectoryPathPolicy;
-import com.unvus.firo.embedded.channel.adapter.Adapter;
-import com.unvus.firo.embedded.channel.endpoint.enums.EndpointType;
 import com.unvus.firo.embedded.domain.AttachBag;
 import com.unvus.firo.embedded.domain.FiroFile;
 import com.unvus.firo.embedded.repository.FiroRepository;
@@ -18,21 +14,16 @@ import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.Tika;
-import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
-import java.nio.file.Files;
 import java.nio.file.InvalidPathException;
-import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
-
-import static com.unvus.firo.embedded.util.FiroWebUtil.FILE_SEP;
 
 @Slf4j
 @Service
@@ -44,15 +35,11 @@ public class FiroService {
 
     public final static String DELETED_MAP_CODE = "_deleted";
 
-    private final DirectoryPathPolicy directoryPathPolicy;
-
     private final FiroRepository firoRepository;
 
     private static Tika tika = new Tika();
 
-    public FiroService(DirectoryPathPolicy directoryPathPolicy, FiroRepository attachRepository) {
-//        this.adapterPluginRegistry = adapterPluginRegistry;
-        this.directoryPathPolicy    = directoryPathPolicy;
+    public FiroService(FiroRepository attachRepository) {
         this.firoRepository = attachRepository;
     }
 
@@ -67,41 +54,28 @@ public class FiroService {
      * </ol>
      *
      * @param file  첨부파일 객체
-     * @param firoRoom <code>ReferenceTypeRegistry</code> 으로 부터 얻은 attachRomm 객체
-     * @param cabinetName 상세 캐비넷 이름
+     * @param cabinet <code>ReferenceTypeRegistry</code> 으로 부터 얻은 firoCabinet 객체
      * @param filterChain 적용할 filterChain. 없으면 최초 설정(attach.yml)에 저장된 filterChain 사용
      * @return uuid
      * @throws Exception
      */
-    public String uploadTemp(MultipartFile file, FiroRoom firoRoom, String cabinetName, FiroFilterChain filterChain) throws Exception {
-
-        createDirectoryIfNotExists(directoryPathPolicy.getTempDir());
-
-        if(StringUtils.isBlank(cabinetName)) {
-            cabinetName = FiroRoomRegistry._DEFAULT_CABINET_NAME;
-        }
+    public String uploadTemp(MultipartFile file, FiroCabinet cabinet, FiroFilterChain filterChain) throws Exception {
 
         if (!file.isEmpty()) {
             InputStream is = file.getInputStream();
+
             try {
                 String uuid = UUID.randomUUID().toString();
-                Path path = Paths.get(directoryPathPolicy.getTempDir(), uuid);
 
-                Files.copy(is, path);
+                File temp = cabinet.writeTemp(uuid, is);
 
                 try {
                     if(filterChain == null || filterChain.size() == 0) {
-                        Map<String, FiroCabinet> cabinetMap = firoRoom.getCabinetMap();
-                        FiroCabinet cabinet = cabinetMap.get(cabinetName);
-                        if(cabinet == null) {
-                            RoomService.addCabinet(firoRoom, cabinetName);
-                        }else {
-                            if(cabinet.getFilterChain() != null && cabinet.getFilterChain().size() > 0) {
-                                cabinet.getFilterChain().startFilter(path.toFile());
-                            }
+                        if (cabinet.getFilterChain() != null && cabinet.getFilterChain().size() > 0) {
+                            cabinet.getFilterChain().startFilter(temp);
                         }
                     }else {
-                        filterChain.startFilter(path.toFile());
+                        filterChain.startFilter(temp);
                     }
                 }catch(Exception e) {
                     log.error(e.getMessage(), e);
@@ -135,17 +109,18 @@ public class FiroService {
         boolean cleared = false;
 
         for(Map.Entry<String, List<FiroFile>> entry: bag.entrySet()) {
-            String mapCode = entry.getKey();
+            String cabinetCode = entry.getKey();
 
-            if(StringUtils.equals(mapCode, DELETED_MAP_CODE)) {
+            FiroCabinet cabinet = FiroRegistry.get(bag.getRoomCode(), cabinetCode);
+
+            if(StringUtils.equals(cabinetCode, DELETED_MAP_CODE)) {
                 deleteAttachPermanently(entry.getValue());
             }else {
                 if(entry.getValue() == null ) {
                     continue;
                 }
 
-                String saveDir = directoryPathPolicy.getFullDir(bag.getRoomCode(), mapCode);
-
+                int index = 1;
                 for(FiroFile attach : entry.getValue()) {
                     if(attach.getId() != null || attach.getSavedName() == null) {
                         continue;
@@ -155,10 +130,10 @@ public class FiroService {
                         clearAttachByRoom(bag.getRoomCode(), roomKey);
                         cleared = true;
                     }
-                    File inputFile = Paths.get(directoryPathPolicy.getTempDir(), attach.getSavedName()).toFile();
-//                    InputStream is = Files.newInputStream(Paths.get(directoryPathPolicy.getTempDir(), attach.getSavedName()));
 
-                    FiroFile newAttach = persistFile(bag.getRoomCode(), roomKey, mapCode, attach.getDisplayName(), saveDir, inputFile, attach.getExt());
+                    File inputFile = cabinet.readTemp(attach.getSavedName());
+
+                    FiroFile newAttach = persistFile(cabinet, roomKey, index++, attach.getDisplayName(), inputFile, attach.getExt());
 
                     newAttachList.add(newAttach);
                 }
@@ -195,19 +170,18 @@ public class FiroService {
             bag.remove(DELETED_MAP_CODE);
         }
 
+        int index = 1;
         for(FiroFile attach : attachList) {
             if(deletedIdList.contains(attach.getId())) {
                 continue;
             }
             try {
-
-                File inputFile = Paths.get(directoryPathPolicy.getBaseDir() + attach.getSavedDir(), attach.getSavedName()).toFile();
+                String cabinetCode = attach.getRefTargetType();
+                FiroCabinet cabinet = FiroRegistry.get(bag.getRoomCode(), cabinetCode);
+                File inputFile = Paths.get(cabinet.getDirectoryPathPolicy().getBaseDir() + attach.getSavedDir(), attach.getSavedName()).toFile();
 //                InputStream is = Files.newInputStream(Paths.get(directoryPathPolicy.getBaseDir() + attach.getSavedDir(), attach.getSavedName()));
-                String mapCode = attach.getRefTargetType();
 
-                String saveDir = directoryPathPolicy.getFullDir(fileRoom.getCode(), mapCode);
-
-                FiroFile newAttach = persistFile(fileRoom.getCode(), newRoomKey, mapCode, attach.getDisplayName(), saveDir, inputFile, "10");
+                FiroFile newAttach = persistFile(cabinet, newRoomKey, index++, attach.getDisplayName(), inputFile, "10");
             }catch(Exception e) {
                 log.error(e.getMessage(), e);
             }
@@ -217,29 +191,29 @@ public class FiroService {
     }
 
 
-    public FiroFile persistFile(String refTarget, Long refTargetKey, String refTargetType, String displayName, String saveDir, File inputFile, String ext) throws Exception {
-        createDirectoryIfNotExists(saveDir);
+    public FiroFile persistFile(FiroCabinet cabinet, Long refTargetKey, int index, String displayName, File inputFile, String ext) throws Exception {
+        String saveDir = cabinet.getDirectoryPathPolicy().getFullDir(cabinet.getRoom().getCode(), cabinet.getCabinetCode());
 
         String extension = StringUtils.substringAfterLast(displayName, ".");
 
-        String fileName = (StringUtils.isNotBlank(refTargetType) ? refTargetType + "_" : "")
-            + RandomStringUtils.randomAlphanumeric(20)
+        String fileName = refTargetKey + "_" + cabinet.getCabinetCode() + "_" + index + "_"
+            + RandomStringUtils.randomAlphanumeric(10)
             + "."
             + extension;
 
-        String uniqueName = getUniqueFileName(saveDir, fileName);
-
         String fileType = detectFile(inputFile);
+        Long size = inputFile.length();
 
-        Long size = Files.copy(new FileInputStream(inputFile), Paths.get(saveDir, uniqueName));
+        cabinet.write(fileName, new FileInputStream(inputFile));
+
 //        getAdapterInstance(null).upload();
         FiroFile attach = new FiroFile();
-        attach.setRefTarget(refTarget);
+        attach.setRefTarget(cabinet.getRoom().getCode());
         attach.setRefTargetKey(refTargetKey);
-        attach.setRefTargetType(refTargetType);
+        attach.setRefTargetType(cabinet.getCabinetCode());
         attach.setDisplayName(displayName);
-        attach.setSavedName(uniqueName);
-        attach.setSavedDir(StringUtils.removeStart(saveDir, directoryPathPolicy.getBaseDir()));
+        attach.setSavedName(fileName);
+        attach.setSavedDir(StringUtils.removeStart(saveDir, cabinet.getDirectoryPathPolicy().getBaseDir()));
         attach.setFileSize(size);
         attach.setFileType(fileType);
         attach.setAccessCnt(0);
@@ -251,25 +225,10 @@ public class FiroService {
         return attach;
     }
 
-    public String uploadEditorImage(MultipartFile upload, String dirPath, String roomCode) throws Exception {
-        String baseDir = directoryPathPolicy.getBaseDir() + FILE_SEP + roomCode;
-
-        if(dirPath == null) {
-            dirPath = "";
-        }else {
-            dirPath = FILE_SEP + dirPath;
-        }
-
-        String subDir = dirPath + FILE_SEP + directoryPathPolicy.getSubDir();
-
-        String saveDir = baseDir + subDir;
+    public String uploadEditorImage(MultipartFile upload, String roomCode) throws Exception {
 
         if(upload != null && upload.getSize() != 0) {
 
-            File dir = new File(saveDir);
-            if(!dir.exists()) { // 경로 존재하지 않으면 강제로 만들어줌
-                dir.mkdirs();
-            }
             String orgName = upload.getOriginalFilename();
 
             String extension = StringUtils.substringAfterLast(orgName, ".");
@@ -278,17 +237,17 @@ public class FiroService {
                 extension = getFormatName(detectFile(upload.getInputStream()));
             }
 
-            String fileName = RandomStringUtils.randomAlphanumeric(20) + "." + extension;
+            String fileName = UUID.randomUUID().toString() + "." + extension;
 
-            String uniqueName = getUniqueFileName(saveDir, fileName);
+            FiroCabinet cabinet = FiroRegistry.get(roomCode, FiroRegistry._DEFAULT_CABINET_NAME);
+            cabinet.write(fileName, upload.getInputStream());
 
-            Files.copy(upload.getInputStream(), Paths.get(saveDir, uniqueName));
-            return subDir + uniqueName;
+            return "/" + cabinet.getDirectoryPathPolicy().getSubDir() + fileName;
         }
         return null;
     }
 
-    public void deleteAttach(List<FiroFile> attaches) {
+    public void deleteAttach(List<FiroFile> attaches) throws Exception {
         deleteAttachPermanently(attaches);
         if(CollectionUtils.isNotEmpty(attaches)) {
             FiroFile attach = attaches.get(0);
@@ -302,28 +261,19 @@ public class FiroService {
     }
 
 
-    private void deleteAttachPermanently(List<FiroFile> attaches) {
+    private void deleteAttachPermanently(List<FiroFile> attaches) throws Exception {
         for(FiroFile attach : attaches) {
             FiroFile savedFiroFile = firoRepository.getOne(attach.getId());
             if(savedFiroFile != null) {
                 if(StringUtils.isNoneBlank(savedFiroFile.getSavedDir()) && StringUtils.isNoneBlank(savedFiroFile.getSavedName())) {
-                    File t = new File(savedFiroFile.getSavedDir()+savedFiroFile.getSavedName());
-                    if(t.exists()) {
-                        t.delete();
-                    }
+                    FiroCabinet cabinet = FiroRegistry.get(savedFiroFile.getRefTarget(), savedFiroFile.getRefTargetType());
+                    cabinet.delete(savedFiroFile.getSavedDir() + savedFiroFile.getSavedName());
+
                     firoRepository.delete(attach);
                 }else {
                     throw new InvalidPathException("", "No path specified");
                 }
             }
-        }
-    }
-
-    private void createDirectoryIfNotExists(String saveDir) throws IOException {
-        Path path = Paths.get(saveDir);
-        //if directory exists?
-        if (!Files.exists(path)) {
-            Files.createDirectories(path);
         }
     }
 
@@ -427,7 +377,7 @@ public class FiroService {
         return result;
     }
 
-    public int clearAttachByRoom(String refTarget, Long refTargetKey) {
+    public int clearAttachByRoom(String refTarget, Long refTargetKey) throws Exception {
         List<FiroFile> attachList = listAttachByRef(refTarget, refTargetKey, null);
         deleteAttachPermanently(attachList);
         return 1;
@@ -503,10 +453,6 @@ public class FiroService {
             return "png";
         }
         return "jpg";
-    }
-
-    public String getBaseDir() {
-        return directoryPathPolicy.getBaseDir();
     }
 
 //    private Adapter getAdapterInstance(EndpointType endpointType) {

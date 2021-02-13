@@ -1,5 +1,7 @@
 package com.unvus.firo.embedded.rest;
 
+import com.unvus.firo.core.FiroRegistry;
+import com.unvus.firo.core.domain.FiroCabinet;
 import com.unvus.firo.embedded.service.FiroService;
 import com.unvus.firo.embedded.util.FiroWebUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -21,8 +23,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.TimeZone;
 
-import static com.unvus.firo.embedded.util.FiroWebUtil.FILE_SEP;
-
 @Slf4j
 @RestController
 public class FiroCkEditorResource {
@@ -31,7 +31,7 @@ public class FiroCkEditorResource {
 
 
     private static final String CK_IMG_URL = "/assets/firo/editor/image";
-    private static final String UPLOAD_DIR = "ckupload";
+    public static final String ROOM_CODE = "ckupload";
 
     public static final String CKEDITOR_RESULT =
         "<script type=\"text/javascript\">" +
@@ -48,7 +48,7 @@ public class FiroCkEditorResource {
         value="/api/firo/ckupload/dnd",
         produces    = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> ckUploadDrop(MultipartFile upload, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String filename = firoService.uploadEditorImage(upload, null, UPLOAD_DIR);
+        String filename = firoService.uploadEditorImage(upload, ROOM_CODE);
 
         // drag & drop
         Map<String, Object> resultMap = new HashMap<>();
@@ -65,7 +65,7 @@ public class FiroCkEditorResource {
         produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String upload(MultipartFile upload, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String filename = firoService.uploadEditorImage(upload, null, UPLOAD_DIR);
+        String filename = firoService.uploadEditorImage(upload, ROOM_CODE);
 
         // dialog
         response.setContentType("text/html;charset=UTF-8");
@@ -86,11 +86,10 @@ public class FiroCkEditorResource {
         String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
 
         filePath = StringUtils.substringAfter(filePath, CK_IMG_URL);
-        String baseDir = firoService.getBaseDir() + FILE_SEP + UPLOAD_DIR;
+        FiroCabinet cabinet = FiroRegistry.get(ROOM_CODE, "default");
+        File f = cabinet.read(ROOM_CODE + filePath);
 
-        File f = new File(baseDir + filePath);
-
-        if (!f.exists()) {
+        if (f == null) {
             return;
         }
 

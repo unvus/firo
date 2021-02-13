@@ -3,7 +3,7 @@ package com.unvus.firo.embedded.rest;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.unvus.firo.core.FiroFilterRegistry;
-import com.unvus.firo.core.FiroRoomRegistry;
+import com.unvus.firo.core.FiroRegistry;
 import com.unvus.firo.core.filter.FiroFilter;
 import com.unvus.firo.core.filter.FiroFilterChain;
 import com.unvus.firo.embedded.domain.AttachBag;
@@ -18,7 +18,6 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
-import javax.servlet.http.HttpServletResponse;
 import java.util.*;
 
 @Slf4j
@@ -58,7 +57,7 @@ public class FiroApiResource {
         Map<String, Object> item = new HashMap<>();
 
         try {
-            String filename = firoService.uploadTemp(file, FiroRoomRegistry.get(refTarget), refTargetType, filterChain);
+            String filename = firoService.uploadTemp(file, FiroRegistry.get(refTarget, refTargetType), filterChain);
 
             item.put("name", filename);
             item.put("displayName", file.getOriginalFilename());
@@ -196,7 +195,7 @@ public class FiroApiResource {
             }
         }
 
-        firoService.copy(FiroRoomRegistry.get(refType), null, refKey, null, copyIds);
+        firoService.copy(FiroRegistry.get(refType), null, refKey, null, copyIds);
 
         return new ResponseEntity<>(HttpStatus.OK);
     }
