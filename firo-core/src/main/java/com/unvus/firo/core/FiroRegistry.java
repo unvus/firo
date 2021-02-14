@@ -21,6 +21,8 @@ public class FiroRegistry {
 
     protected static DirectoryPathPolicy directoryPathPolicy;
 
+    protected static String secret = "mExYTViNzQzOTE3YmQ4OWY3NTE4MmRkOTg2YmM2NjAyMjVjZTNjNjFkYzZjRhOTlhYWVhNGRjNT";
+
     public static FiroRegistry from(DirectoryPathPolicy directoryPathPolicy) {
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         return INSTANCE;
@@ -29,6 +31,11 @@ public class FiroRegistry {
     public static FiroRegistry from(DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.adapter = adapter;
+        return INSTANCE;
+    }
+
+    public static FiroRegistry secret(String secret) {
+        FiroRegistry.secret = secret;
         return INSTANCE;
     }
 
@@ -48,6 +55,11 @@ public class FiroRegistry {
         FiroRoom firoRoom = FiroRegistry.get(roomCode);
         FiroCabinet cabinet = firoRoom.getCabinet(cabinetCode);
         return cabinet == null?firoRoom.getCabinet(_DEFAULT_CABINET_NAME): cabinet;
+    }
+
+
+    public static String getSecret() {
+        return FiroRegistry.secret;
     }
 
     public static FiroRegistry add(FiroRoom firoRoom) {

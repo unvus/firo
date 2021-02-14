@@ -11,6 +11,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.time.LocalDateTime;
 
 @Data
 @Builder(builderMethodName = "privateBuilder")
@@ -41,11 +42,23 @@ public class FiroCabinet {
         return adapter.writeTemp(this.directoryPathPolicy, path, in);
     }
 
-    public void write(String path, InputStream in) throws Exception {
-        adapter.write(this, path, in);
+    public void write(String fullDir, String path, InputStream in) throws Exception {
+        adapter.write(fullDir, path, in);
+    }
+
+    public void rename(String from, String to) throws Exception {
+        adapter.rename(from, to);
     }
 
     public void delete(String path) throws Exception {
         adapter.delete(this.directoryPathPolicy, path);
+    }
+
+    public void deleteTemp(String path) throws Exception {
+        adapter.deleteTemp(this.directoryPathPolicy, path);
+    }
+
+    public String getFullDir(LocalDateTime date) {
+        return this.directoryPathPolicy.getFullDir(this.room.getCode(), this.getCabinetCode(), date);
     }
 }

@@ -18,6 +18,7 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import javax.servlet.http.HttpServletRequest;
+import java.time.LocalDateTime;
 import java.util.*;
 
 @Slf4j
@@ -85,7 +86,7 @@ public class FiroApiResource {
         @PathVariable("roomKey") Long refKey,
         @RequestBody AttachBag attachBag) throws Exception {
 
-        List<FiroFile>  attachList = firoService.save(refKey, attachBag);
+        List<FiroFile>  attachList = firoService.save(refKey, attachBag, LocalDateTime.now());
 
 
         Map<String, Object> result = new HashMap<>();
@@ -173,31 +174,6 @@ public class FiroApiResource {
             .orElse(
                 new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
             );
-    }
-
-
-    @PostMapping("/attach/copy/{roomName}/{roomKey}/{cabinetName}")
-    public ResponseEntity<Object> imageCopy(
-        @PathVariable("roomName") String refType,
-        @PathVariable("roomKey") Long refKey,
-        @PathVariable("cabinetName") String cabinetName,
-        @RequestBody List<Long> copyIds,
-        HttpServletRequest request) throws Exception {
-
-        // vr 기존 게시 해재
-        if(cabinetName.equals("vrphoto")) {
-            List<FiroFile> postedList = firoService.listAttachByRef(refType, refKey, cabinetName, "10");
-            if(postedList.size() > 0) {
-                for(FiroFile attach : postedList) {
-                    attach.setExt("00");
-                    firoService.updateAttach(attach);
-                }
-            }
-        }
-
-        firoService.copy(FiroRegistry.get(refType), null, refKey, null, copyIds);
-
-        return new ResponseEntity<>(HttpStatus.OK);
     }
 
 

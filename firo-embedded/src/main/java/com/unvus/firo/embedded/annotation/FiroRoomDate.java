@@ -6,11 +6,6 @@ import java.lang.annotation.RetentionPolicy;
 import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
-@Target(ElementType.TYPE)
-public @interface FiroRoom {
-    String value();
-
-    String keyFieldName() default "id";
-
-    String dateFieldName() default "createdDt";
+@Target(ElementType.FIELD)
+public @interface FiroRoomDate {
 }

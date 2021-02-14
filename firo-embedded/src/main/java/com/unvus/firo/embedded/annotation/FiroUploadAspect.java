@@ -4,6 +4,7 @@ import com.unvus.firo.embedded.domain.AttachBag;
 import com.unvus.firo.embedded.domain.AttachContainer;
 import com.unvus.firo.embedded.service.FiroService;
 import com.unvus.firo.embedded.util.FiroWebUtil;
+import com.unvus.util.DateTools;
 import com.unvus.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -19,6 +20,9 @@ import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.chrono.ChronoLocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -79,7 +83,18 @@ public class FiroUploadAspect {
                 refKey = (Long)PropertyUtils.getProperty(target, firoRoom.keyFieldName());
             }
 
-            firoService.save(refKey, attachContainer.get(firoRoom.value()));
+            Field roomDateField = getAnnotatedField(target, FiroRoomDate.class);
+            Object date;
+            if (roomKeyField != null) {
+                date = PropertyUtils.getProperty(target, roomDateField.getName());
+            } else {
+                date = PropertyUtils.getProperty(target, firoRoom.dateFieldName());
+            }
+            if(date instanceof LocalDate) {
+                date = DateTools.convert((LocalDate) date, DateTools.ConvertTo.LOCAL_DATE_TIME);
+            }
+
+            firoService.save(refKey, attachContainer.get(firoRoom.value()), (LocalDateTime)date);
         }
     }
 

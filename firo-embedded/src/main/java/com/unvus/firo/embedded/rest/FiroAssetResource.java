@@ -5,6 +5,7 @@ import com.imageresize4j.ImageResizeProcessor;
 import com.unvus.firo.core.FiroRegistry;
 import com.unvus.firo.core.domain.FiroCabinet;
 import com.unvus.firo.core.util.ImageResizeUtil;
+import com.unvus.firo.core.util.SecureNameUtil;
 import com.unvus.firo.embedded.config.properties.FiroProperties;
 import com.unvus.firo.embedded.domain.FiroFile;
 import com.unvus.firo.embedded.service.FiroService;
@@ -21,6 +22,7 @@ import javax.servlet.http.HttpServletResponse;
 import java.awt.*;
 import java.awt.image.BufferedImage;
 import java.io.File;
+import java.io.FileInputStream;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.Paths;
@@ -86,7 +88,7 @@ public class FiroAssetResource {
 
         String contentType = firoService.detectFile(f);
 
-        File tf = convertScaledImage(width, height, attach.getId(), f, contentType);
+        File tf = convertScaledImage(cabinet, width, height, attach, f, contentType);
 
         File result = tf;
         if(tf == null) {
@@ -125,7 +127,7 @@ public class FiroAssetResource {
 
         String contentType = firoService.detectFile(f);
 
-        File tf = convertScaledImage(width, height, null, f, contentType);
+        File tf = convertScaledImage(cabinet, width, height, null, f, contentType);
 
         if(tf == null) {
             FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), f, contentType);
@@ -161,7 +163,7 @@ public class FiroAssetResource {
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
-        viewByRefTypeOrder(action, refType, refKey, mapCode, 1, extAlt, ext, fmetaValue, width, height, request, response);
+        viewByRefTypeOrder(action, refType, refKey, mapCode, 0, extAlt, ext, fmetaValue, width, height, request, response);
     }
 
 
@@ -237,10 +239,10 @@ public class FiroAssetResource {
             if(attach == null) {
                 attach = attachList.get(0);
             }
-        }else if (attachList.size() >= idx) {
+        }else if (attachList.size() > idx) {
             // search by index
 
-            attach = attachList.get(idx - 1);
+            attach = attachList.get(idx);
         }
 
         if(attach == null) {
@@ -257,7 +259,7 @@ public class FiroAssetResource {
 
         String contentType = firoService.detectFile(f);
 
-        File tf = convertScaledImage(width, height, attach.getId(), f, contentType);
+        File tf = convertScaledImage(cabinet, width, height, attach, f, contentType);
 
         File result = tf;
         if(tf == null) {
@@ -268,7 +270,7 @@ public class FiroAssetResource {
 
     }
 
-    private File convertScaledImage(Integer width, Integer height, Long key, File f, String contentType) {
+    private File convertScaledImage(FiroCabinet cabinet, Integer width, Integer height, FiroFile attach, File f, String contentType) {
         if(width == null) {
             width = 0;
         }
@@ -279,28 +281,26 @@ public class FiroAssetResource {
         File tf = null;
         if(width > 0 || height > 0) {
             boolean imageCreated = false;
-            // get path
-            String base = firoProperties.getDirectory().getBaseDir();
-            String filePath = StringUtils.substringAfter(f.getAbsolutePath(), base);
-            String fullPath = base + File.separator + "scaled" + StringUtils.substringBeforeLast(filePath, "/");
-            String scaledName = "scaled_" + key + "_" + width + "_" + height;
+
+            String fullPath = Paths.get(cabinet.getDirectoryPathPolicy().getBaseDir(), attach.getSavedDir(), "scaled_" + attach.getId()).toString();
+
+            String scaledName = width + "_" + height;
 
 
             try {
-                if(key != null) {
-                    // cache 해당 안되는 애들은 똑같은 로직 타지 않도록 map 에 담아 바로 null 을 넘길 수 있도록. map size 제한
-                    if(nullCache.containsKey(scaledName)) {
-                        return null;
-                    }
-                    tf = new File(fullPath, scaledName);
-                    if (tf.exists()) {
-//                        log.info("CACHED_IMAGE_FROM:" + fullPath + File.separator + scaledName);
-                        return tf;
-                    }
-                }else {
-                    // temp 파일에 scale 을 적용 할 경우
-                    tf = File.createTempFile("scaled_", "_tmp", new File(firoProperties.getDirectory().getTmpDir()));
+                // cache 해당 안되는 파일은 똑같은 로직 타지 않도록 map 에 담아 바로 null 을 넘길 수 있도록. map size 제한
+                if (nullCache.containsKey(attach.getId() + "_" + scaledName)) {
+                    return null;
                 }
+                try {
+                    tf = cabinet.read(Paths.get(fullPath, scaledName).toString());
+                }catch (Exception ignore) {}
+
+                if(tf != null) {
+                    return tf;
+                }
+
+                tf = File.createTempFile("scaled_", ".tmp");
 
                 BufferedImage bi = ImageIO.read(f);
                 int actualWidth = bi.getWidth();
@@ -309,14 +309,6 @@ public class FiroAssetResource {
                 Dimension tobeDimension = ImageResizeUtil.getResizeDimension(actualDimension, width, height);
 
                 if (actualDimension.getWidth() > tobeDimension.getWidth()) {
-                    if(key != null) {
-                        Path path = Paths.get(fullPath);
-
-                        if (!Files.exists(path)) {
-                            Files.createDirectories(path);
-                        }
-                    }
-
                     BufferedImage resizedBi = ImageResizeUtil.resizeIn2PhasesViaIR4J(
                         bi,
                         (int) tobeDimension.getWidth(),
@@ -328,6 +320,8 @@ public class FiroAssetResource {
                     ImageResizeUtil.write(resizedBi, tf, contentType);
                     imageCreated = true;
                 }
+
+                cabinet.write(fullPath, scaledName, new FileInputStream(tf));
             } catch (Exception ignore) {
                 log.warn(ignore.getMessage(), ignore);
             }
@@ -335,9 +329,7 @@ public class FiroAssetResource {
             if(!imageCreated && tf != null) {
                 tf.delete();
                 tf = null;
-                if(key != null) {
-                    nullCache.put(scaledName, true);
-                }
+                nullCache.put(attach.getId() + "_" + scaledName, true);
             }
         }
 

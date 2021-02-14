@@ -2,9 +2,6 @@ package com.unvus.firo.core.adapter.ftp;
 
 
 import com.unvus.firo.core.adapter.Adapter;
-import com.unvus.firo.core.adapter.AdapterProps;
-import com.unvus.firo.core.adapter.EndpointType;
-import com.unvus.firo.core.domain.FiroCabinet;
 import com.unvus.firo.core.policy.DirectoryPathPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
@@ -13,8 +10,10 @@ import org.springframework.integration.file.remote.session.Session;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.stereotype.Component;
 
-import java.io.*;
-import java.nio.file.Files;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReference;
@@ -45,12 +44,7 @@ public class FtpAdapter implements Adapter {
 
         template
             .execute(session -> {
-                try {
-                    session.read(Paths.get(dir, path).toString(), new FileOutputStream(tempFile.get()));
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                    tempFile.set(null);
-                }
+                session.read(Paths.get(dir, path).toString(), new FileOutputStream(tempFile.get()));
 
                 return null;
             });
@@ -62,12 +56,8 @@ public class FtpAdapter implements Adapter {
         Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
         template
             .execute(session -> {
-                try {
-                    createDirectoryIfNotExists(session, directoryPathPolicy.getTempDir());
-                    session.write(in, fullPath.toString());
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
+                createDirectoryIfNotExists(session, directoryPathPolicy.getTempDir());
+                session.write(in, fullPath.toString());
 
                 return null;
             });
@@ -77,19 +67,22 @@ public class FtpAdapter implements Adapter {
     }
 
     @Override
-    public void write(FiroCabinet cabinet, String path, InputStream in) throws Exception {
-        DirectoryPathPolicy policy = cabinet.getDirectoryPathPolicy();
-        String fullDir = policy.getFullDir(cabinet.getRoom().getCode(), cabinet.getCabinetCode());
+    public void write(String fullDir, String path, InputStream in) throws Exception {
         Path fullPath = Paths.get(fullDir, path);
         template
             .execute(session -> {
-                try {
-                    createDirectoryIfNotExists(session, fullDir);
-                    session.write(in, fullPath.toString());
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
+                createDirectoryIfNotExists(session, fullDir);
+                session.write(in, fullPath.toString());
 
+                return null;
+            });
+    }
+
+    @Override
+    public void rename(String from, String to) throws Exception {
+        template
+            .execute(session -> {
+                session.rename(from, to);
                 return null;
             });
     }
@@ -98,21 +91,20 @@ public class FtpAdapter implements Adapter {
     public void delete(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
         template
             .execute(session -> {
-                try {
-                    Path fullPath = Paths.get(directoryPathPolicy.getBaseDir(), path);
-                    session.remove(fullPath.toString());
-                } catch (IOException e) {
-                    log.error(e.getMessage(), e);
-                }
-
+                Path fullPath = Paths.get(directoryPathPolicy.getBaseDir(), path);
+                session.remove(fullPath.toString());
                 return null;
             });
     }
 
-
     @Override
-    public boolean supports(EndpointType endpointType) {
-        return EndpointType.FTP == endpointType;
+    public void deleteTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
+        template
+            .execute(session -> {
+                Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
+                session.remove(fullPath.toString());
+                return null;
+            });
     }
 
     private void createDirectoryIfNotExists(Session session, String path) throws IOException {
