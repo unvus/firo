@@ -11,21 +11,29 @@
     </parent>
 
     <groupId>com.unvus.firo</groupId>
-    <artifactId>firo-parent</artifactId>
-    <version>0.0.1-juvis-SNAPSHOT</version>
-    <packaging>pom</packaging>
-    <name>firo - parent pom</name>
+    <artifactId>firo</artifactId>
+    <version>0.0.2-juvis-SNAPSHOT</version>
+    <packaging>jar</packaging>
+    <name>firo</name>
 
-    <distributionManagement>
-        <snapshotRepository>
-            <id>wylie-snapshots</id>
-            <url>https://repo.wylie.co.kr/repository/maven-snapshots</url>
-        </snapshotRepository>
-        <repository>
-            <id>wylie-releases</id>
-            <url>https://repo.wylie.co.kr/repository/maven-releases</url>
-        </repository>
-    </distributionManagement>
+    <properties>
+        <java.version>1.8</java.version>
+        <lombok.version>1.18.2</lombok.version>
+        <maven.compiler.source>${java.version}</maven.compiler.source>
+        <maven.compiler.target>${java.version}</maven.compiler.target>
+        <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
+        <unvus.version>1.4.0-juvis-SNAPSHOT</unvus.version>
+        <commons-beanutils.version>1.9.4</commons-beanutils.version>
+        <commons-collections4.version>4.4</commons-collections4.version>
+        <commons-io.version>2.5</commons-io.version>
+        <commons-net.version>3.6</commons-net.version>
+        <h2.version>1.4.200</h2.version>
+        <metadata-extractor.version>2.14.0</metadata-extractor.version>
+        <querydsl.version>4.3.1</querydsl.version>
+        <servlet-api.version>3.1.0</servlet-api.version>
+        <slf4j.version>1.7.30</slf4j.version>
+        <tika.version>1.24.1</tika.version>
+    </properties>
 
     <repositories>
         <repository>
@@ -48,15 +56,6 @@
         </pluginRepository>
     </pluginRepositories>
 
-    <properties>
-        <java.version>1.8</java.version>
-        <lombok.version>1.18.2</lombok.version>
-        <maven.compiler.source>${java.version}</maven.compiler.source>
-        <maven.compiler.target>${java.version}</maven.compiler.target>
-        <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
-        <unvus.version>1.4.0-juvis-SNAPSHOT</unvus.version>
-    </properties>
-
     <dependencyManagement>
         <dependencies>
             <dependency>
@@ -78,33 +77,234 @@
 
     <dependencies>
         <dependency>
+            <groupId>com.unvus</groupId>
+            <artifactId>unvus-util</artifactId>
+            <version>1.4.0-juvis-SNAPSHOT</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.imageresizer4j</groupId>
+            <artifactId>imageresizer</artifactId>
+            <version>1.0.1</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.imgscalr</groupId>
+            <artifactId>imgscalr-lib</artifactId>
+            <version>4.2</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.apache.tika</groupId>
+            <artifactId>tika-core</artifactId>
+            <version>${tika.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.plugin</groupId>
+            <artifactId>spring-plugin-core</artifactId>
+            <version>2.0.0.RELEASE</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.drewnoakes</groupId>
+            <artifactId>metadata-extractor</artifactId>
+            <version>${metadata-extractor.version}</version>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-io</groupId>
+            <artifactId>commons-io</artifactId>
+            <version>${commons-io.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>commons-net</groupId>
+            <artifactId>commons-net</artifactId>
+            <version>${commons-net.version}</version>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.integration</groupId>
+            <artifactId>spring-integration-ftp</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-s3</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.amazonaws</groupId>
+            <artifactId>aws-java-sdk-sts</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-autoconfigure</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-context</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-jdbc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-orm</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.hibernate</groupId>
+            <artifactId>hibernate-core</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.hibernate.validator</groupId>
+            <artifactId>hibernate-validator</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework.data</groupId>
+            <artifactId>spring-data-jpa</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>org.springframework</groupId>
+            <artifactId>spring-webmvc</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>javax.servlet</groupId>
+            <artifactId>javax.servlet-api</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.h2database</groupId>
+            <artifactId>h2</artifactId>
+            <version>${h2.version}</version>
+            <optional>true</optional>
+        </dependency>
+        <dependency>
+            <groupId>com.zaxxer</groupId>
+            <artifactId>HikariCP</artifactId>
+        </dependency>
+
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-configuration-processor</artifactId>
+            <optional>true</optional>
+        </dependency>
+
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-apt</artifactId>
+            <version>${querydsl.version}</version>
+            <scope>provided</scope>
+        </dependency>
+
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-jpa</artifactId>
+            <version>${querydsl.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.querydsl</groupId>
+            <artifactId>querydsl-sql-spring</artifactId>
+            <version>${querydsl.version}</version>
+        </dependency>
+        <dependency>
             <groupId>org.projectlombok</groupId>
             <artifactId>lombok</artifactId>
             <version>${lombok.version}</version>
         </dependency>
     </dependencies>
 
-    <modules>
-        <module>firo-core</module>
-        <module>firo-embedded</module>
-    </modules>
-
     <build>
         <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.8.0</version>
+                <configuration>
+                    <encoding>UTF-8</encoding>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArgument>-Xlint</compilerArgument>
+                    <showWarnings>true</showWarnings>
+                    <showDeprecation>true</showDeprecation>
+                    <annotationProcessors>
+                        <annotationProcessor>lombok.launch.AnnotationProcessorHider$AnnotationProcessor</annotationProcessor>
+                        <annotationProcessor>com.querydsl.apt.jpa.JPAAnnotationProcessor</annotationProcessor>
+                    </annotationProcessors>
+                    <annotationProcessorPaths>
+                        <path>
+                            <groupId>org.springframework.boot</groupId>
+                            <artifactId>spring-boot-starter-data-jpa</artifactId>
+                            <version>${spring-boot.version}</version>
+                        </path>
+                        <path>
+                            <groupId>org.projectlombok</groupId>
+                            <artifactId>lombok</artifactId>
+                            <version>1.18.2</version>
+                        </path>
+                        <path>
+                            <groupId>com.querydsl</groupId>
+                            <artifactId>querydsl-apt</artifactId>
+                            <version>${querydsl.version}</version>
+                        </path>
+                        <path>
+                            <groupId>javax.persistence</groupId>
+                            <artifactId>javax.persistence-api</artifactId>
+                            <version>2.2</version>
+                        </path>
+                    </annotationProcessorPaths>
+                </configuration>
+            </plugin>
+<!--            <plugin>-->
+<!--                <groupId>com.mysema.maven</groupId>-->
+<!--                <artifactId>apt-maven-plugin</artifactId>-->
+<!--                <version>1.1.3</version>-->
+<!--                <executions>-->
+<!--                    <execution>-->
+<!--                        <phase>generate-sources</phase>-->
+<!--                        <goals>-->
+<!--                            <goal>process</goal>-->
+<!--                        </goals>-->
+<!--                        <configuration>-->
+<!--                            <outputDirectory>target/generated-sources</outputDirectory>-->
+<!--                            <processor>com.querydsl.apt.jpa.JPAAnnotationProcessor</processor>-->
+<!--                        </configuration>-->
+<!--                    </execution>-->
+<!--                </executions>-->
 
+<!--                <dependencies>-->
+<!--                    <dependency>-->
+<!--                        <groupId>com.querydsl</groupId>-->
+<!--                        <artifactId>querydsl-apt</artifactId>-->
+<!--                        <version>${querydsl.version}</version>-->
+<!--                    </dependency>-->
+<!--                </dependencies>-->
+<!--            </plugin>-->
         </plugins>
-        <pluginManagement>
-            <plugins>
-
-            </plugins>
-        </pluginManagement>
     </build>
-    <reporting>
-        <plugins>
-
-        </plugins>
-    </reporting>
-
     <profiles>
+        <profile>
+            <id>local</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+        </profile>
     </profiles>
 </project>
