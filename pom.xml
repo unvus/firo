@@ -16,6 +16,17 @@
     <packaging>jar</packaging>
     <name>firo</name>
 
+    <distributionManagement>
+        <snapshotRepository>
+            <id>wylie-snapshots</id>
+            <url>https://repo.wylie.co.kr/repository/maven-snapshots</url>
+        </snapshotRepository>
+        <repository>
+            <id>wylie-releases</id>
+            <url>https://repo.wylie.co.kr/repository/maven-releases</url>
+        </repository>
+    </distributionManagement>
+
     <properties>
         <java.version>1.8</java.version>
         <lombok.version>1.18.2</lombok.version>
