@@ -120,7 +120,7 @@ public class FiroUploadAspect {
 
             Field roomDateField = getAnnotatedField(target, FiroRoomDate.class);
             Object date;
-            if (roomKeyField != null) {
+            if (roomDateField != null) {
                 date = PropertyUtils.getProperty(target, roomDateField.getName());
             } else {
                 date = PropertyUtils.getProperty(target, firoRoom.dateFieldName());
