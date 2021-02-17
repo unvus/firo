@@ -117,10 +117,7 @@ public class FiroService {
 
             String cabinetCode = entry.getKey();
             FiroCabinet cabinet = FiroRegistry.get(bag.getRoomCode(), cabinetCode);
-            Map<String, Object> param = new HashMap<>();
-            param.put("refTarget", bag.getRoomCode());
-            param.put("refTargetKey", roomKey);
-            param.put("refTargetType", cabinetCode);
+
 
             if(entry.getValue() == null ) {
                 continue;
@@ -144,7 +141,7 @@ public class FiroService {
 
                         FiroFile newAttach = persistFile(cabinet, roomKey, index, attach.getDisplayName(), inputFile, date, attach.getExt());
 
-                        cabinet.delete(attach.getSavedName());
+                        cabinet.deleteTemp(attach.getSavedName());
                         newAttachList.add(newAttach);
                     }
                 }catch (Exception e) {

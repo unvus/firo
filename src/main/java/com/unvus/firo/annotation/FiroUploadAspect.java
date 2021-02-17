@@ -12,13 +12,17 @@ import org.apache.commons.beanutils.PropertyUtils;
 import org.aspectj.lang.ProceedingJoinPoint;
 import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
+import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
 import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
+import java.lang.annotation.Annotation;
+import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
@@ -40,7 +44,7 @@ public class FiroUploadAspect {
             List<Object> targetList = new ArrayList<>();
             extractFiroRoomObject(domain, targetList);
 
-            upload(targetList);
+            upload(targetList, null);
         } finally {
             return result;
         }
@@ -51,14 +55,40 @@ public class FiroUploadAspect {
         Object result = joinPoint.proceed();
         try {
             Object[] args = joinPoint.getArgs();
-            List<Object> targetList = new ArrayList<>();
-            for(Object arg: args) {
-                if(arg.getClass().isAnnotationPresent(FiroRoom.class)) {
-                    extractFiroRoomObject(arg, targetList);
+
+            MethodSignature signature = (MethodSignature) joinPoint.getSignature();
+            Method method = signature.getMethod();
+
+            int idx = 0;
+            FiroRoom parameterAnnotation = null;
+            for(Annotation[] methodAnnotations : method.getParameterAnnotations()) {
+                for(Annotation methodAnnotation : methodAnnotations) {
+                    if(methodAnnotation.annotationType().equals(FiroRoom.class)) {
+                        parameterAnnotation = (FiroRoom)methodAnnotation;
+                        break;
+                    }
                 }
+                if(parameterAnnotation != null) {
+                    break;
+                }
+                idx++;
             }
 
-            upload(targetList);
+            List<Object> targetList = new ArrayList<>();
+
+            if(parameterAnnotation != null) {
+                targetList.add(args[idx]);
+                extractFiroRoomObject(args[idx], targetList);
+                upload(targetList, parameterAnnotation);
+            }else {
+                for(Object arg: args) {
+                    if(arg.getClass().isAnnotationPresent(FiroRoom.class)) {
+                        extractFiroRoomObject(arg, targetList);
+                    }
+                }
+
+                upload(targetList, null);
+            }
 
         } finally {
             return result;
@@ -66,11 +96,19 @@ public class FiroUploadAspect {
 
     }
 
-    private void upload(List<Object> targetList) throws Exception {
+
+    private void upload(List<Object> targetList, FiroRoom firoRoomForArgs) throws Exception {
         AttachContainer attachContainer = getAttachContainer();
+        int index = 0;
         for(Object target: targetList) {
             Class klass = target.getClass();
+
             FiroRoom firoRoom = (FiroRoom) klass.getAnnotation(FiroRoom.class);
+
+            if(index == 0 && firoRoomForArgs != null) {
+                firoRoom = firoRoomForArgs;
+            }
+
             Field roomKeyField = getAnnotatedField(target, FiroRoomKey.class);
             Long refKey;
             if(roomKeyField != null) {
@@ -92,6 +130,7 @@ public class FiroUploadAspect {
             }
 
             firoService.save(refKey, attachContainer.get(firoRoom.value()), (LocalDateTime)date);
+            index++;
         }
     }
 

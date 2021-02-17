@@ -73,7 +73,11 @@ public class FiroRegistry {
     public static FiroCabinet get(String roomCode, String cabinetCode) {
         FiroRoom firoRoom = FiroRegistry.get(roomCode);
         FiroCabinet cabinet = firoRoom.getCabinet(cabinetCode);
-        return cabinet == null?firoRoom.getCabinet(_DEFAULT_CABINET_NAME): cabinet;
+        if(cabinet == null) {
+            cabinet = FiroCabinet.builder(firoRoom, cabinetCode).build();
+            firoRoom.addCabinet(cabinet);
+        }
+        return cabinet;
     }
 
 
