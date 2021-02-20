@@ -1,5 +1,6 @@
 package com.unvus.firo.module.service;
 
+import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
@@ -23,7 +24,11 @@ public class FiroRegistry {
 
     protected static Map<String, FiroRoom> roomMap = new HashMap();
 
-    protected static AdapterType adapterType = AdapterType.LOCAL;
+    protected static String directUrl;
+
+    protected static AdapterType defaultAdapterType = AdapterType.LOCAL;
+
+    protected static Adapter defaultAdapter;
 
     protected static DirectoryPathPolicy directoryPathPolicy;
 
@@ -34,14 +39,25 @@ public class FiroRegistry {
         this.adapterPluginRegistry = pluginRegistry;
     }
 
-    public static FiroRegistry from(DirectoryPathPolicy directoryPathPolicy) {
+    public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy) {
+        FiroRegistry.directUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
+        FiroRegistry.defaultAdapter = getAdapter(defaultAdapterType);
+
         return INSTANCE;
     }
 
-    public static FiroRegistry from(DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
+    public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
+        FiroRegistry.directUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
-        FiroRegistry.adapterType = adapterType;
+        FiroRegistry.defaultAdapter = getAdapter(adapterType);
+        return INSTANCE;
+    }
+
+    public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
+        FiroRegistry.directUrl = props.getDirectUrl();
+        FiroRegistry.directoryPathPolicy = directoryPathPolicy;
+        FiroRegistry.defaultAdapter = adapter;
         return INSTANCE;
     }
 
@@ -50,12 +66,12 @@ public class FiroRegistry {
         return INSTANCE;
     }
 
-    public static Adapter getDefaultAdapter() {
-        return adapterPluginRegistry.getPluginFor(adapterType).get();
+    public static String getDirectUrl() {
+        return directUrl;
     }
 
-    public static AdapterType getDefaultAdapterType() {
-        return adapterType;
+    public static Adapter getDefaultAdapter() {
+        return FiroRegistry.defaultAdapter;
     }
 
     public static Adapter getAdapter(AdapterType adapterType) {
@@ -64,6 +80,10 @@ public class FiroRegistry {
 
     public static DirectoryPathPolicy getDefaultDirectoryPathPolicy() {
         return FiroRegistry.directoryPathPolicy;
+    }
+
+    public static Map<String, FiroRoom> getAllRoom() {
+        return roomMap;
     }
 
     public static FiroRoom get(String roomCode) {
@@ -95,7 +115,7 @@ public class FiroRegistry {
     }
 
     protected static FiroRoom createDefaultRoom(String roomCode) {
-        FiroRoom room = FiroRoom.of(roomCode);
+        FiroRoom room = FiroRoom.builder(roomCode).build();
 
         roomMap.put(roomCode, room);
 

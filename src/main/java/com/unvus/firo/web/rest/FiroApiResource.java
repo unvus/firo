@@ -7,8 +7,11 @@ import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.filter.FiroFilter;
 import com.unvus.firo.module.filter.FiroFilterChain;
 import com.unvus.firo.module.service.domain.AttachBag;
+import com.unvus.firo.module.service.domain.FiroCabinet;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.FiroService;
+import com.unvus.firo.module.service.domain.FiroRoom;
+import com.unvus.util.FieldMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -34,6 +37,45 @@ public class FiroApiResource {
         this.objectMapper     = objectMapper;
         this.firoService = firoService;
     }
+
+
+    /**
+     * GET    /attach/{refType}/{refKey} : 첨부 리스트 조회
+     */
+    @GetMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<FieldMap> getConfig(@RequestParam Map<String, Object> param,
+                                               @RequestParam(value = "roomKeyList", required = false) List<Long> roomKeyList,
+                                               @RequestParam(value = "cabinetList", required = false) List<String> cabinetList) throws Exception {
+        FieldMap result = new FieldMap();
+        result.put("directUrl", FiroRegistry.getDirectUrl());
+//        result.put("secret", FiroRegistry.getSecret());
+
+        Map<String, FiroRoom> firoRoomMap = FiroRegistry.getAllRoom();
+
+        FieldMap rooms = new FieldMap();
+
+        for(FiroRoom room: firoRoomMap.values()) {
+            FieldMap roomMap = new FieldMap();
+            roomMap.put("code", room.getCode());
+            roomMap.put("directUrl", room.getDirectUrl());
+
+
+            FieldMap cabinets = new FieldMap();
+            roomMap.put("cabinetMap", cabinets);
+            for(FiroCabinet cabinet : room.getAllCabinet().values()) {
+                FieldMap cabinetMap = new FieldMap();
+                cabinetMap.put("code", cabinet.getCabinetCode());
+                cabinetMap.put("directUrl", cabinet.getDirectUrl());
+                cabinets.put(cabinet.getCabinetCode(), cabinetMap);
+            }
+            rooms.put(room.getCode(), roomMap);
+        }
+
+        result.put("roomMap", rooms);
+
+        return new ResponseEntity<>(result, HttpStatus.OK);
+    }
+
 
     @PostMapping(value = "/attach/tmp")
     public ResponseEntity<Map<String, Object>> uploadTemp(

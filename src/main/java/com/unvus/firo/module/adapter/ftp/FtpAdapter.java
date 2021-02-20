@@ -7,6 +7,7 @@ import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.io.FileUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.integration.file.remote.session.Session;
@@ -23,8 +24,6 @@ import java.nio.file.Paths;
 import java.util.concurrent.atomic.AtomicReference;
 
 @Slf4j
-@ConditionalOnProperty(prefix = "unvus.firo.ftp", name = "host")
-@Component
 public class FtpAdapter implements Adapter {
 
     private final FtpRemoteFileTemplate template;

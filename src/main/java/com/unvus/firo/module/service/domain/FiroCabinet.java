@@ -27,15 +27,20 @@ public class FiroCabinet {
     private Adapter adapter;
 
     @Getter
+    @Setter
+    private String directUrl;
+
+    @Getter
     private DirectoryPathPolicy directoryPathPolicy;
 
     @Getter
     @Setter
     private FiroFilterChain filterChain;
 
-    FiroCabinet(FiroRoom room, String cabinetCode, Adapter adapter, DirectoryPathPolicy directoryPathPolicy, FiroFilterChain filterChain) {
+    FiroCabinet(FiroRoom room, String cabinetCode, String directUrl, Adapter adapter, DirectoryPathPolicy directoryPathPolicy, FiroFilterChain filterChain) {
         this.room = room;
         this.cabinetCode = cabinetCode;
+        this.directUrl = directUrl;
         this.adapter = adapter;
         this.directoryPathPolicy = directoryPathPolicy;
         this.filterChain = filterChain;
@@ -48,7 +53,8 @@ public class FiroCabinet {
     public static class FiroCabinetBuilder {
         private FiroRoom room;
         private String cabinetCode;
-        private AdapterType adapterType;
+        private String directUrl;
+        private Adapter adapter;
         private DirectoryPathPolicy directoryPathPolicy;
         private FiroFilterChain filterChain;
 
@@ -57,8 +63,13 @@ public class FiroCabinet {
             this.cabinetCode = cabinetCode;
         }
 
-        public FiroCabinetBuilder adapter(AdapterType adapterType) {
-            this.adapterType = adapterType;
+        public FiroCabinetBuilder directUrl(String directUrl) {
+            this.directUrl = directUrl;
+            return this;
+        }
+
+        public FiroCabinetBuilder adapter(Adapter adapter) {
+            this.adapter = adapter;
             return this;
         }
 
@@ -73,18 +84,19 @@ public class FiroCabinet {
         }
 
         public FiroCabinet build() {
-            if(directoryPathPolicy == null) {
+            if (directUrl == null) {
+                directUrl = room.getDirectUrl();
+            }
+
+            if (directoryPathPolicy == null) {
                 directoryPathPolicy = room.getDirectoryPathPolicy();
             }
 
-            Adapter adapter;
-            if(adapterType == null) {
+            if(adapter == null) {
                 adapter = room.getAdapter();
-            }else {
-                adapter = FiroRegistry.getAdapter(adapterType);
             }
 
-            return new FiroCabinet(room, cabinetCode, adapter, directoryPathPolicy, filterChain);
+            return new FiroCabinet(room, cabinetCode, directUrl, adapter, directoryPathPolicy, filterChain);
         }
     }
 

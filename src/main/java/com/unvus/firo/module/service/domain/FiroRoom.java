@@ -12,29 +12,27 @@ import java.util.Map;
 @Data
 public class FiroRoom {
 
-    private FiroRoom() {
-    }
-
-    private FiroRoom(String code, Adapter adapter, DirectoryPathPolicy directoryPathPolicy) {
-
-    }
-
-    public static FiroRoom of(String code) {
-        FiroRoom room = new FiroRoom();
-        room.setCode(code);
-        room.setAdapter(FiroRegistry.getDefaultAdapter());
-        room.setDirectoryPathPolicy(FiroRegistry.getDefaultDirectoryPathPolicy());
-        room.addCabinet(FiroRegistry._DEFAULT_CABINET_NAME);
-        return room;
-    }
-
     private String code;
+
+    private String directUrl;
 
     private Adapter adapter;
 
     private DirectoryPathPolicy directoryPathPolicy;
 
     private Map<String, FiroCabinet> cabinetMap = new HashMap();
+
+
+    private FiroRoom(String code) {
+        this.code = code;
+    }
+
+    private FiroRoom(String code, String directUrl, Adapter adapter, DirectoryPathPolicy directoryPathPolicy) {
+        this.code = code;
+        this.directUrl = directUrl;
+        this.adapter = adapter;
+        this.directoryPathPolicy = directoryPathPolicy;
+    }
 
     public FiroRoom addCabinet(String code) {
         FiroCabinet cabinet = FiroCabinet
@@ -53,6 +51,7 @@ public class FiroRoom {
         cabinetMap.put(cabinet.getCabinetCode(), cabinet);
         return this;
     }
+
     public FiroCabinet getCabinet(String cabinetCode) {
         if(cabinetCode == null) {
             return null;
@@ -60,10 +59,20 @@ public class FiroRoom {
         return cabinetMap.get(cabinetCode);
     }
 
+    public Map<String, FiroCabinet> getAllCabinet() {
+        return cabinetMap;
+    }
+
+    public static FiroRoomBuilder builder(String code) {
+        return new FiroRoomBuilder(code);
+    }
+
     public static class FiroRoomBuilder {
         private String code;
 
-        private AdapterType adapterType;
+        private String directUrl;
+
+        private Adapter adapter;
 
         private DirectoryPathPolicy directoryPathPolicy;
 
@@ -71,8 +80,13 @@ public class FiroRoom {
             this.code = code;
         }
 
-        public FiroRoomBuilder adapter(AdapterType adapterType) {
-            this.adapterType = adapterType;
+        public FiroRoomBuilder directUrl(String directUrl) {
+            this.directUrl = directUrl;
+            return this;
+        }
+
+        public FiroRoomBuilder adapter(Adapter adapter) {
+            this.adapter = adapter;
             return this;
         }
 
@@ -82,18 +96,20 @@ public class FiroRoom {
         }
 
         public FiroRoom build() {
+            if (directUrl == null) {
+                directUrl = FiroRegistry.getDirectUrl();
+            }
+
             if (directoryPathPolicy == null) {
                 directoryPathPolicy = FiroRegistry.getDefaultDirectoryPathPolicy();
             }
 
-            Adapter adapter;
-            if (adapterType == null) {
+            if (adapter == null) {
                 adapter = FiroRegistry.getDefaultAdapter();
-            } else {
-                adapter = FiroRegistry.getAdapter(adapterType);
             }
-
-            return new FiroRoom(code, adapter, directoryPathPolicy);
+            FiroRoom room = new FiroRoom(code, directUrl, adapter, directoryPathPolicy);
+            room.addCabinet(FiroRegistry._DEFAULT_CABINET_NAME);
+            return room;
         }
     }
 

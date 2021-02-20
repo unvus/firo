@@ -22,6 +22,8 @@ public class FiroProperties {
 
     private Directory directory = new Directory();
 
+    private String directUrl;
+
     private Ftp ftp = new Ftp();
 
     private final DatabaseProperties database = new DatabaseProperties();

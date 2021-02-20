@@ -1,10 +1,13 @@
 package com.unvus.firo.config;
 
 import com.unvus.firo.config.properties.FiroProperties;
+import com.unvus.firo.module.adapter.ftp.FtpAdapter;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 
@@ -18,7 +21,7 @@ public class FiroFtpConfiguration {
         this.firoProperties = firoProperties;
     }
 
-    @Bean
+    @Bean(autowireCandidate = false)
     public DefaultFtpSessionFactory firoFtpSessionFactory() {
         FiroProperties.Ftp ftp = firoProperties.getFtp();
         DefaultFtpSessionFactory defaultFtpSessionFactory = new DefaultFtpSessionFactory();
@@ -30,9 +33,14 @@ public class FiroFtpConfiguration {
         return defaultFtpSessionFactory;
     }
 
-    @Bean
-    public FtpRemoteFileTemplate firoFtpRemoteFileTemplate(DefaultFtpSessionFactory dsf) {
-        FtpRemoteFileTemplate template = new FtpRemoteFileTemplate(dsf);
+    @Bean(autowireCandidate = false)
+    public FtpRemoteFileTemplate firoFtpRemoteFileTemplate() {
+        FtpRemoteFileTemplate template = new FtpRemoteFileTemplate(firoFtpSessionFactory());
         return template;
+    }
+
+    @Bean
+    public FtpAdapter firoFtpAdapter() {
+        return new FtpAdapter(firoFtpRemoteFileTemplate());
     }
 }
