@@ -1,12 +1,8 @@
 package com.unvus.firo.module.service.domain;
 
 import com.unvus.firo.module.adapter.Adapter;
-import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.filter.FiroFilterChain;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
-import com.unvus.firo.module.service.FiroRegistry;
-import lombok.Builder;
-import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 
@@ -20,7 +16,7 @@ public class FiroCabinet {
     private FiroRoom room;
 
     @Getter
-    private String cabinetCode;
+    private String code;
 
     @Getter
     @Setter
@@ -37,13 +33,20 @@ public class FiroCabinet {
     @Setter
     private FiroFilterChain filterChain;
 
-    FiroCabinet(FiroRoom room, String cabinetCode, String directUrl, Adapter adapter, DirectoryPathPolicy directoryPathPolicy, FiroFilterChain filterChain) {
+    @Getter
+    @Setter
+    private SecureAccessFunc secureAccessFunc;
+
+    FiroCabinet(FiroRoom room, String code, String directUrl,
+                Adapter adapter, DirectoryPathPolicy directoryPathPolicy,
+                FiroFilterChain filterChain, SecureAccessFunc secureAccessFunc) {
         this.room = room;
-        this.cabinetCode = cabinetCode;
+        this.code = code;
         this.directUrl = directUrl;
         this.adapter = adapter;
         this.directoryPathPolicy = directoryPathPolicy;
         this.filterChain = filterChain;
+        this.secureAccessFunc = secureAccessFunc;
     }
 
     public static FiroCabinetBuilder builder(FiroRoom room, String cabinetCode) {
@@ -52,15 +55,16 @@ public class FiroCabinet {
 
     public static class FiroCabinetBuilder {
         private FiroRoom room;
-        private String cabinetCode;
+        private String code;
         private String directUrl;
         private Adapter adapter;
         private DirectoryPathPolicy directoryPathPolicy;
         private FiroFilterChain filterChain;
+        private SecureAccessFunc secureAccessFunc;
 
-        public FiroCabinetBuilder(FiroRoom room, String cabinetCode) {
+        public FiroCabinetBuilder(FiroRoom room, String code) {
             this.room = room;
-            this.cabinetCode = cabinetCode;
+            this.code = code;
         }
 
         public FiroCabinetBuilder directUrl(String directUrl) {
@@ -83,9 +87,14 @@ public class FiroCabinet {
             return this;
         }
 
+        public FiroCabinetBuilder secureAccessFunc(SecureAccessFunc secureAccessFunc) {
+            this.secureAccessFunc = secureAccessFunc;
+            return this;
+        }
+
         public FiroCabinet build() {
-            if (cabinetCode == null) {
-                cabinetCode = "default";
+            if (code == null) {
+                code = "default";
             }
             if (directUrl == null) {
                 directUrl = room.getDirectUrl();
@@ -95,11 +104,15 @@ public class FiroCabinet {
                 directoryPathPolicy = room.getDirectoryPathPolicy();
             }
 
-            if(adapter == null) {
+            if (adapter == null) {
                 adapter = room.getAdapter();
             }
 
-            return new FiroCabinet(room, cabinetCode, directUrl, adapter, directoryPathPolicy, filterChain);
+            if (secureAccessFunc == null) {
+                secureAccessFunc = room.getSecureAccessFunc();
+            }
+
+            return new FiroCabinet(room, code, directUrl, adapter, directoryPathPolicy, filterChain, secureAccessFunc);
         }
     }
 
@@ -132,6 +145,6 @@ public class FiroCabinet {
     }
 
     public String getFullDir(LocalDateTime date) {
-        return this.directoryPathPolicy.getFullDir(this.room.getCode(), this.getCabinetCode(), date);
+        return this.directoryPathPolicy.getFullDir(this.room.getCode(), this.getCode(), date);
     }
 }

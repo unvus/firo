@@ -14,7 +14,7 @@ public class SecureNameUtil {
             byte[] hash = digest.digest((
                 cabinet.getRoom().getCode()
                     + refTargetKey
-                    + cabinet.getCabinetCode()
+                    + cabinet.getCode()
                     + index
                     + FiroRegistry.getSecret()
             ).getBytes(StandardCharsets.UTF_8));
@@ -34,6 +34,6 @@ public class SecureNameUtil {
     }
 
     public static String genDir(FiroCabinet cabinet, String refTargetKey) {
-        return refTargetKey + "_" + cabinet.getCabinetCode() + DateDirectoryPathPolicy.FILE_SEP;
+        return refTargetKey + "_" + cabinet.getCode() + DateDirectoryPathPolicy.FILE_SEP;
     }
 }

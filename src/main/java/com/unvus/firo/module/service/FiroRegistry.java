@@ -6,6 +6,7 @@ import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.service.domain.FiroCabinet;
 import com.unvus.firo.module.service.domain.FiroRoom;
+import com.unvus.firo.module.service.domain.SecureAccessFunc;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.stereotype.Component;
@@ -25,13 +26,15 @@ public class FiroRegistry {
 
     protected static Map<String, FiroRoom> roomMap = new HashMap();
 
-    protected static String directUrl;
+    protected static String defaultDirectUrl;
 
     protected static AdapterType defaultAdapterType = AdapterType.LOCAL;
 
     protected static Adapter defaultAdapter;
 
     protected static DirectoryPathPolicy directoryPathPolicy;
+
+    protected static SecureAccessFunc defaultSecureAccessFunc = null;
 
     protected static String secret = "mExYTViNzQzOTE3YmQ4OWY3NTE4MmRkOTg2YmM2NjAyMjVjZTNjNjFkYzZjRhOTlhYWVhNGRjNT";
 
@@ -41,7 +44,7 @@ public class FiroRegistry {
     }
 
     public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy) {
-        FiroRegistry.directUrl = props.getDirectUrl();
+        FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = getAdapter(defaultAdapterType);
 
@@ -49,14 +52,14 @@ public class FiroRegistry {
     }
 
     public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
-        FiroRegistry.directUrl = props.getDirectUrl();
+        FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = getAdapter(adapterType);
         return INSTANCE;
     }
 
     public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
-        FiroRegistry.directUrl = props.getDirectUrl();
+        FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = adapter;
         return INSTANCE;
@@ -67,12 +70,21 @@ public class FiroRegistry {
         return INSTANCE;
     }
 
-    public static String getDirectUrl() {
-        return directUrl;
+    public static FiroRegistry secureAccessFunc(SecureAccessFunc defaultSecureAccessFunc) {
+        FiroRegistry.defaultSecureAccessFunc = defaultSecureAccessFunc;
+        return INSTANCE;
+    }
+
+    public static SecureAccessFunc getDefaultSecureAccessFunc() {
+        return FiroRegistry.defaultSecureAccessFunc;
+    }
+
+    public static String getDefaultDirectUrl() {
+        return defaultDirectUrl;
     }
 
     public static String getDirectUrl(String roomCode, String cabinetCode) {
-        String result = directUrl;
+        String result = defaultDirectUrl;
         if(StringUtils.isBlank(roomCode)) {
             return result;
         }

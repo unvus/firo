@@ -248,6 +248,10 @@ public class FiroAssetResource {
 
         FiroCabinet cabinet = FiroRegistry.get(refType, mapCode);
 
+        if(cabinet.getSecureAccessFunc() != null && !cabinet.getSecureAccessFunc().accept(request, attach)) {
+            return;
+        }
+
         File f = cabinet.read(attach.getSavedDir() + attach.getSavedName());
 
         if (!f.exists()) {

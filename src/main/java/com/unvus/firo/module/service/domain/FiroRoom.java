@@ -1,7 +1,6 @@
 package com.unvus.firo.module.service.domain;
 
 import com.unvus.firo.module.adapter.Adapter;
-import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.service.FiroRegistry;
 import lombok.Data;
@@ -22,16 +21,18 @@ public class FiroRoom {
 
     private Map<String, FiroCabinet> cabinetMap = new HashMap();
 
+    private SecureAccessFunc secureAccessFunc;
 
     private FiroRoom(String code) {
         this.code = code;
     }
 
-    private FiroRoom(String code, String directUrl, Adapter adapter, DirectoryPathPolicy directoryPathPolicy) {
+    private FiroRoom(String code, String directUrl, Adapter adapter, DirectoryPathPolicy directoryPathPolicy, SecureAccessFunc secureAccessFunc) {
         this.code = code;
         this.directUrl = directUrl;
         this.adapter = adapter;
         this.directoryPathPolicy = directoryPathPolicy;
+        this.secureAccessFunc = secureAccessFunc;
     }
 
     public FiroRoom addCabinet(String code) {
@@ -48,7 +49,7 @@ public class FiroRoom {
         if(!this.code.equals(cabinet.getRoom().getCode())) {
             throw new RuntimeException("does not match for this room : invalid room code");
         }
-        cabinetMap.put(cabinet.getCabinetCode(), cabinet);
+        cabinetMap.put(cabinet.getCode(), cabinet);
         return this;
     }
 
@@ -76,6 +77,8 @@ public class FiroRoom {
 
         private DirectoryPathPolicy directoryPathPolicy;
 
+        private SecureAccessFunc secureAccessFunc;
+
         public FiroRoomBuilder(String code) {
             this.code = code;
         }
@@ -95,9 +98,14 @@ public class FiroRoom {
             return this;
         }
 
+        public FiroRoomBuilder secureAccessFunc(SecureAccessFunc secureAccessFunc) {
+            this.secureAccessFunc = secureAccessFunc;
+            return this;
+        }
+
         public FiroRoom build() {
             if (directUrl == null) {
-                directUrl = FiroRegistry.getDirectUrl();
+                directUrl = FiroRegistry.getDefaultDirectUrl();
             }
 
             if (directoryPathPolicy == null) {
@@ -107,7 +115,12 @@ public class FiroRoom {
             if (adapter == null) {
                 adapter = FiroRegistry.getDefaultAdapter();
             }
-            FiroRoom room = new FiroRoom(code, directUrl, adapter, directoryPathPolicy);
+
+            if (secureAccessFunc == null) {
+                secureAccessFunc = FiroRegistry.getDefaultSecureAccessFunc();
+            }
+
+            FiroRoom room = new FiroRoom(code, directUrl, adapter, directoryPathPolicy, secureAccessFunc);
             room.addCabinet(FiroRegistry._DEFAULT_CABINET_NAME);
             return room;
         }

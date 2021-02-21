@@ -174,7 +174,7 @@ public class FiroService {
         FiroFile attach = new FiroFile();
         attach.setRefTarget(cabinet.getRoom().getCode());
         attach.setRefTargetKey(refTargetKey);
-        attach.setRefTargetType(cabinet.getCabinetCode());
+        attach.setRefTargetType(cabinet.getCode());
         attach.setDisplayName(displayName);
         attach.setSavedName(fileName);
         // /room/2020/11/821_default/

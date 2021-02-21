@@ -47,7 +47,7 @@ public class FiroApiResource {
                                                @RequestParam(value = "roomKeyList", required = false) List<Long> roomKeyList,
                                                @RequestParam(value = "cabinetList", required = false) List<String> cabinetList) throws Exception {
         FieldMap result = new FieldMap();
-        result.put("directUrl", FiroRegistry.getDirectUrl());
+        result.put("directUrl", FiroRegistry.getDefaultDirectUrl());
 //        result.put("secret", FiroRegistry.getSecret());
 
         Map<String, FiroRoom> firoRoomMap = FiroRegistry.getAllRoom();
@@ -64,9 +64,9 @@ public class FiroApiResource {
             roomMap.put("cabinetMap", cabinets);
             for(FiroCabinet cabinet : room.getAllCabinet().values()) {
                 FieldMap cabinetMap = new FieldMap();
-                cabinetMap.put("code", cabinet.getCabinetCode());
+                cabinetMap.put("code", cabinet.getCode());
                 cabinetMap.put("directUrl", cabinet.getDirectUrl());
-                cabinets.put(cabinet.getCabinetCode(), cabinetMap);
+                cabinets.put(cabinet.getCode(), cabinetMap);
             }
             rooms.put(room.getCode(), roomMap);
         }
