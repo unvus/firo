@@ -84,6 +84,9 @@ public class FiroCabinet {
         }
 
         public FiroCabinet build() {
+            if (cabinetCode == null) {
+                cabinetCode = "default";
+            }
             if (directUrl == null) {
                 directUrl = room.getDirectUrl();
             }

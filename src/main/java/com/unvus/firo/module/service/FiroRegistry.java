@@ -6,6 +6,7 @@ import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.service.domain.FiroCabinet;
 import com.unvus.firo.module.service.domain.FiroRoom;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.plugin.core.PluginRegistry;
 import org.springframework.stereotype.Component;
 
@@ -68,6 +69,26 @@ public class FiroRegistry {
 
     public static String getDirectUrl() {
         return directUrl;
+    }
+
+    public static String getDirectUrl(String roomCode, String cabinetCode) {
+        String result = directUrl;
+        if(StringUtils.isBlank(roomCode)) {
+            return result;
+        }
+
+        FiroRoom room = get(roomCode);
+        if(room != null) {
+            result = room.getDirectUrl();
+            if (StringUtils.isBlank(cabinetCode)) {
+                return result;
+            }
+            FiroCabinet cabinet = room.getCabinet(cabinetCode);
+            if(cabinet != null) {
+                result = cabinet.getDirectUrl();
+            }
+        }
+        return result;
     }
 
     public static Adapter getDefaultAdapter() {
