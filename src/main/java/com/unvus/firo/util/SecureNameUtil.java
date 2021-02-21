@@ -27,13 +27,13 @@ public class SecureNameUtil {
                 hexString.append(hex);
             }
 
-            return index + "_" + hexString.toString().substring(10, 10 + 20);
+            return cabinet.getCode() + "_" + index + "_" + hexString.toString().substring(10, 10 + 20);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }
     }
 
     public static String genDir(FiroCabinet cabinet, String refTargetKey) {
-        return refTargetKey + DateDirectoryPathPolicy.FILE_SEP + cabinet.getCode() + DateDirectoryPathPolicy.FILE_SEP;
+        return refTargetKey + DateDirectoryPathPolicy.FILE_SEP;
     }
 }
