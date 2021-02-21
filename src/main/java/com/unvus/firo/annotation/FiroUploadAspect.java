@@ -98,7 +98,7 @@ public class FiroUploadAspect {
 
 
     private void upload(List<Object> targetList, FiroRoom firoRoomForArgs) throws Exception {
-        AttachContainer attachContainer = getAttachContainer();
+        AttachContainer attachContainer = FiroWebUtil.getAttachContainer();
         int index = 0;
         for(Object target: targetList) {
             Class klass = target.getClass();
@@ -156,24 +156,4 @@ public class FiroUploadAspect {
         return null;
     }
 
-    private AttachContainer getAttachContainer() throws IOException {
-        HttpServletRequest request = FiroWebUtil.request();
-
-        ContentCachingRequestWrapper requestWrapper = (ContentCachingRequestWrapper) request;
-
-        String body = new String(requestWrapper.getContentAsByteArray());
-
-//        String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-
-        AttachContainer attachContainer = new AttachContainer();
-        Map<String, Map> map = (Map)JsonUtil.toMap(body).get("attachContainer");
-
-        for(Map.Entry<String, Map> entry: map.entrySet()) {
-            AttachBag attachBag = JsonUtil.toObject(entry.getValue(), AttachBag.class);
-            attachBag.setRoomCode(entry.getKey());
-            attachContainer.put(entry.getKey(), attachBag);
-        }
-
-        return attachContainer;
-    }
 }

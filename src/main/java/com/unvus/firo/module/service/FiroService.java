@@ -128,6 +128,7 @@ public class FiroService {
                 try {
                     if (attach.getId() != null) {
                         if(!attach.getSavedName().startsWith(index + "_")) {
+                            // 이미 저장된 파일이지만 index(순서) 가 변경된 경우, 파일 이름을 다시 생성해서 저장한다.
                             FiroFile firoFile = firoRepository.getOne(attach.getId());
                             String newFileName = SecureNameUtil.gen(cabinet, firoFile.getId().toString(), index);
 
@@ -160,7 +161,7 @@ public class FiroService {
         // /my/base/room/2020/11/
         String saveDir = cabinet.getFullDir(date);
 
-        // /my/base/room/2020/11/72_default/
+        // /my/base/room/2020/11/72/default/
         saveDir += SecureNameUtil.genDir(cabinet, refTargetKey.toString());
 
         String fileName = SecureNameUtil.gen(cabinet, refTargetKey.toString(), index);

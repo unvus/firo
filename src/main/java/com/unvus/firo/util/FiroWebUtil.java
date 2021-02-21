@@ -1,9 +1,13 @@
 package com.unvus.firo.util;
 
+import com.unvus.firo.module.service.domain.AttachBag;
+import com.unvus.firo.module.service.domain.AttachContainer;
+import com.unvus.util.JsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.io.IOUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
+import org.springframework.web.util.ContentCachingRequestWrapper;
 
 import javax.imageio.ImageIO;
 import javax.servlet.ServletRequest;
@@ -20,10 +24,7 @@ import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.SimpleDateFormat;
-import java.util.Calendar;
-import java.util.Date;
-import java.util.Enumeration;
-import java.util.TimeZone;
+import java.util.*;
 
 public class FiroWebUtil {
 
@@ -69,6 +70,27 @@ public class FiroWebUtil {
 
         response.setHeader("Cache-Control",  maxAgeDirective);
         response.setHeader("Expires", dateFormat.format(cal.getTime()));
+    }
+
+    public static AttachContainer getAttachContainer() throws IOException {
+        HttpServletRequest request = FiroWebUtil.request();
+
+        ContentCachingRequestWrapper requestWrapper = (ContentCachingRequestWrapper) request;
+
+        String body = new String(requestWrapper.getContentAsByteArray());
+
+//        String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
+
+        AttachContainer attachContainer = new AttachContainer();
+        Map<String, Map> map = (Map) JsonUtil.toMap(body).get("attachContainer");
+
+        for (Map.Entry<String, Map> entry : map.entrySet()) {
+            AttachBag attachBag = JsonUtil.toObject(entry.getValue(), AttachBag.class);
+            attachBag.setRoomCode(entry.getKey());
+            attachContainer.put(entry.getKey(), attachBag);
+        }
+
+        return attachContainer;
     }
 
     public static void writeFile(HttpServletResponse response, File f) throws IOException {

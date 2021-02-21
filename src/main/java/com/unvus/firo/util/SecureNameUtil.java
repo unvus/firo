@@ -34,6 +34,6 @@ public class SecureNameUtil {
     }
 
     public static String genDir(FiroCabinet cabinet, String refTargetKey) {
-        return refTargetKey + "_" + cabinet.getCode() + DateDirectoryPathPolicy.FILE_SEP;
+        return refTargetKey + DateDirectoryPathPolicy.FILE_SEP + cabinet.getCode() + DateDirectoryPathPolicy.FILE_SEP;
     }
 }
