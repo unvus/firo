@@ -1,6 +1,6 @@
 package com.unvus.firo.module.service;
 
-import com.unvus.firo.module.service.domain.FiroCabinet;
+import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.filter.FiroFilterChain;
 import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.FiroFile;
@@ -50,12 +50,12 @@ public class FiroService {
      * </ol>
      *
      * @param file  첨부파일 객체
-     * @param cabinet <code>ReferenceTypeRegistry</code> 으로 부터 얻은 firoCabinet 객체
+     * @param category <code>ReferenceTypeRegistry</code> 으로 부터 얻은 firoCategory 객체
      * @param filterChain 적용할 filterChain. 없으면 최초 설정(attach.yml)에 저장된 filterChain 사용
      * @return uuid
      * @throws Exception
      */
-    public String uploadTemp(MultipartFile file, FiroCabinet cabinet, FiroFilterChain filterChain) throws Exception {
+    public String uploadTemp(MultipartFile file, FiroCategory category, FiroFilterChain filterChain) throws Exception {
 
         if (!file.isEmpty()) {
             InputStream is = file.getInputStream();
@@ -63,12 +63,12 @@ public class FiroService {
             try {
                 String uuid = UUID.randomUUID().toString();
 
-                File temp = cabinet.writeTemp(uuid, is);
+                File temp = category.writeTemp(uuid, is);
 
                 try {
                     if(filterChain == null || filterChain.size() == 0) {
-                        if (cabinet.getFilterChain() != null && cabinet.getFilterChain().size() > 0) {
-                            cabinet.getFilterChain().startFilter(temp);
+                        if (category.getFilterChain() != null && category.getFilterChain().size() > 0) {
+                            category.getFilterChain().startFilter(temp);
                         }
                     }else {
                         filterChain.startFilter(temp);
@@ -90,20 +90,20 @@ public class FiroService {
     }
 
     @Transactional
-    public List<FiroFile> save(Long roomKey, AttachBag bag, LocalDateTime date) throws Exception {
-        return save(roomKey, bag, date, false);
+    public List<FiroFile> save(Long domainKey, AttachBag bag, LocalDateTime date) throws Exception {
+        return save(domainKey, bag, date, false);
     }
 
     @Transactional
-    public List<FiroFile> save(Long roomKey, AttachBag bag, LocalDateTime date, boolean cleanRoom) throws Exception {
+    public List<FiroFile> save(Long domainKey, AttachBag bag, LocalDateTime date, boolean cleanDomain) throws Exception {
         List<FiroFile> newAttachList = new ArrayList();
 
         if(bag == null || bag.isEmpty()) {
             return newAttachList;
         }
 
-        if (cleanRoom) {
-            clearAttachByRoom(bag.getRoomCode(), roomKey);
+        if (cleanDomain) {
+            clearAttachByDomain(bag.getDomainCode(), domainKey);
         }
 
         // 삭제 우선 처리
@@ -115,8 +115,8 @@ public class FiroService {
 
         for(Map.Entry<String, List<FiroFile>> entry: bag.entrySet()) {
 
-            String cabinetCode = entry.getKey();
-            FiroCabinet cabinet = FiroRegistry.get(bag.getRoomCode(), cabinetCode);
+            String categoryCode = entry.getKey();
+            FiroCategory category = FiroRegistry.get(bag.getDomainCode(), categoryCode);
 
 
             if(entry.getValue() == null ) {
@@ -130,19 +130,19 @@ public class FiroService {
                         if(!attach.getSavedName().startsWith(index + "_")) {
                             // 이미 저장된 파일이지만 index(순서) 가 변경된 경우, 파일 이름을 다시 생성해서 저장한다.
                             FiroFile firoFile = firoRepository.getOne(attach.getId());
-                            String newFileName = SecureNameUtil.gen(cabinet, firoFile.getId().toString(), index);
+                            String newFileName = SecureNameUtil.gen(category, firoFile.getId().toString(), index);
 
-                            cabinet.rename(firoFile.getSavedName(), newFileName);
+                            category.rename(firoFile.getSavedName(), newFileName);
 
                             firoFile.setSavedName(newFileName);
                             firoRepository.save(firoFile);
                         }
                     } else {
-                        File inputFile = cabinet.readTemp(attach.getSavedName());
+                        File inputFile = category.readTemp(attach.getSavedName());
 
-                        FiroFile newAttach = persistFile(cabinet, roomKey, index, attach.getDisplayName(), inputFile, date, attach.getExt());
+                        FiroFile newAttach = persistFile(category, domainKey, index, attach.getDisplayName(), inputFile, date, attach.getExt());
 
-                        cabinet.deleteTemp(attach.getSavedName());
+                        category.deleteTemp(attach.getSavedName());
                         newAttachList.add(newAttach);
                     }
                 }catch (Exception e) {
@@ -157,29 +157,29 @@ public class FiroService {
     }
 
 
-    public FiroFile persistFile(FiroCabinet cabinet, Long refTargetKey, int index, String displayName, File inputFile, LocalDateTime date, String ext) throws Exception {
-        // /my/base/room/2020/11/
-        String saveDir = cabinet.getFullDir(date);
+    public FiroFile persistFile(FiroCategory category, Long refTargetKey, int index, String displayName, File inputFile, LocalDateTime date, String ext) throws Exception {
+        // /my/base/domain/2020/11/
+        String saveDir = category.getFullDir(date);
 
-        // /my/base/room/2020/11/72/default/
-        saveDir += SecureNameUtil.genDir(cabinet, refTargetKey.toString());
+        // /my/base/domain/2020/11/72/default/
+        saveDir += SecureNameUtil.genDir(category, refTargetKey.toString());
 
-        String fileName = SecureNameUtil.gen(cabinet, refTargetKey.toString(), index);
+        String fileName = SecureNameUtil.gen(category, refTargetKey.toString(), index);
 
         String fileType = detectFile(inputFile);
         Long size = inputFile.length();
 
-        cabinet.write(saveDir, fileName, new FileInputStream(inputFile));
+        category.write(saveDir, fileName, new FileInputStream(inputFile));
 
 //        getAdapterInstance(null).upload();
         FiroFile attach = new FiroFile();
-        attach.setRefTarget(cabinet.getRoom().getCode());
+        attach.setRefTarget(category.getDomain().getCode());
         attach.setRefTargetKey(refTargetKey);
-        attach.setRefTargetType(cabinet.getCode());
+        attach.setRefTargetType(category.getCode());
         attach.setDisplayName(displayName);
         attach.setSavedName(fileName);
-        // /room/2020/11/821_default/
-        attach.setSavedDir(StringUtils.removeStart(saveDir, cabinet.getDirectoryPathPolicy().getBaseDir()));
+        // /domain/2020/11/821/default/
+        attach.setSavedDir(StringUtils.removeStart(saveDir, category.getDirectoryPathPolicy().getBaseDir()));
         attach.setFileSize(size);
         attach.setFileType(fileType);
         attach.setAccessCnt(0);
@@ -191,7 +191,7 @@ public class FiroService {
         return attach;
     }
 
-    public String uploadEditorImage(MultipartFile upload, String roomCode) throws Exception {
+    public String uploadEditorImage(MultipartFile upload, String domainCode) throws Exception {
 
         if(upload != null && upload.getSize() != 0) {
 
@@ -205,10 +205,10 @@ public class FiroService {
 
             String fileName = UUID.randomUUID().toString() + "." + extension;
 
-            FiroCabinet cabinet = FiroRegistry.get(roomCode, FiroRegistry._DEFAULT_CABINET_NAME);
-            cabinet.write(cabinet.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream());
+            FiroCategory category = FiroRegistry.get(domainCode, FiroRegistry._DEFAULT_CATEGORY_NAME);
+            category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream());
 
-            return "/" + cabinet.getDirectoryPathPolicy().getSubDir() + fileName;
+            return "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
         }
         return null;
     }
@@ -232,9 +232,9 @@ public class FiroService {
             FiroFile savedFiroFile = firoRepository.getOne(attach.getId());
             if(savedFiroFile != null) {
                 if(StringUtils.isNoneBlank(savedFiroFile.getSavedDir()) && StringUtils.isNoneBlank(savedFiroFile.getSavedName())) {
-                    FiroCabinet cabinet = FiroRegistry.get(savedFiroFile.getRefTarget(), savedFiroFile.getRefTargetType());
+                    FiroCategory category = FiroRegistry.get(savedFiroFile.getRefTarget(), savedFiroFile.getRefTargetType());
                     try {
-                        cabinet.delete(savedFiroFile.getSavedDir() + savedFiroFile.getSavedName());
+                        category.delete(savedFiroFile.getSavedDir() + savedFiroFile.getSavedName());
                     }catch(Exception e) {
                         log.error(e.getMessage(), e);
                     }
@@ -328,7 +328,7 @@ public class FiroService {
     public Map<Long, AttachBag> getAttachBagMapByRef(String refTarget, List<Long> refTargetKeyList) {
         Map<String, Object> param = new HashMap();
         param.put("refTarget", refTarget);
-        param.put("roomKeyList", refTargetKeyList);
+        param.put("domainKeyList", refTargetKeyList);
         List<FiroFile> list = firoRepository.listAttach(param);
 
         Map<Long, AttachBag> result = new HashMap<>();
@@ -347,7 +347,7 @@ public class FiroService {
         return result;
     }
 
-    public int clearAttachByRoom(String refTarget, Long refTargetKey) throws Exception {
+    public int clearAttachByDomain(String refTarget, Long refTargetKey) throws Exception {
         List<FiroFile> attachList = listAttachByRef(refTarget, refTargetKey, null);
         deleteAttachPermanently(attachList);
         return 1;

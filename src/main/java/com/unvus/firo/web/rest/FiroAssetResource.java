@@ -3,7 +3,7 @@ package com.unvus.firo.web.rest;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.imageresize4j.ImageResizeProcessor;
 import com.unvus.firo.module.service.FiroRegistry;
-import com.unvus.firo.module.service.domain.FiroCabinet;
+import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.FiroService;
@@ -74,9 +74,9 @@ public class FiroAssetResource {
             return;
         }
 
-        FiroCabinet cabinet = FiroRegistry.get(attach.getRefTarget(), attach.getRefTargetType());
+        FiroCategory category = FiroRegistry.get(attach.getRefTarget(), attach.getRefTargetType());
 
-        File f = cabinet.read(attach.getSavedDir() + attach.getSavedName());
+        File f = category.read(attach.getSavedDir() + attach.getSavedName());
 //        File f = new File(firoProperties.getDirectory().getBaseDir() + attach.getSavedDir() + attach.getSavedName());
 
         if (f == null) {
@@ -85,7 +85,7 @@ public class FiroAssetResource {
 
         String contentType = firoService.detectFile(f);
 
-        File tf = convertScaledImage(cabinet, width, height, attach, f, contentType);
+        File tf = convertScaledImage(category, width, height, attach, f, contentType);
 
         File result = tf;
         if(tf == null) {
@@ -95,10 +95,10 @@ public class FiroAssetResource {
         FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, attach.getDisplayName(), result, contentType);
     }
 
-    @GetMapping(value = "/attachTemp/{action:view|download}/{roomCode}/{cabinetCode}/{id}")
+    @GetMapping(value = "/attachTemp/{action:view|download}/{domainCode}/{categoryCode}/{id}")
     public void viewTemp(@PathVariable("action") String action,
-                         @PathVariable("roomCode") String roomCode,
-                         @PathVariable("cabinetCode") String cabinetCode,
+                         @PathVariable("domainCode") String domainCode,
+                         @PathVariable("categoryCode") String categoryCode,
                          @PathVariable("id") String id,
                          @RequestParam(value="w", required = false) Integer width,
                          @RequestParam(value="h", required = false) Integer height,
@@ -114,9 +114,9 @@ public class FiroAssetResource {
             return;
         }
 
-        FiroCabinet cabinet = FiroRegistry.get(roomCode, cabinetCode);
+        FiroCategory category = FiroRegistry.get(domainCode, categoryCode);
 
-        File f = cabinet.readTemp(id);
+        File f = category.readTemp(id);
 
         if (f == null) {
             return;
@@ -124,7 +124,7 @@ public class FiroAssetResource {
 
         String contentType = firoService.detectFile(f);
 
-        File tf = convertScaledImage(cabinet, width, height, null, f, contentType);
+        File tf = convertScaledImage(category, width, height, null, f, contentType);
 
         if(tf == null) {
             FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), f, contentType);
@@ -246,13 +246,13 @@ public class FiroAssetResource {
             return;
         }
 
-        FiroCabinet cabinet = FiroRegistry.get(refType, mapCode);
+        FiroCategory category = FiroRegistry.get(refType, mapCode);
 
-        if(cabinet.getSecureAccessFunc() != null && !cabinet.getSecureAccessFunc().accept(request, attach)) {
+        if(category.getSecureAccessFunc() != null && !category.getSecureAccessFunc().accept(request, attach)) {
             return;
         }
 
-        File f = cabinet.read(attach.getSavedDir() + attach.getSavedName());
+        File f = category.read(attach.getSavedDir() + attach.getSavedName());
 
         if (!f.exists()) {
             return;
@@ -260,7 +260,7 @@ public class FiroAssetResource {
 
         String contentType = firoService.detectFile(f);
 
-        File tf = convertScaledImage(cabinet, width, height, attach, f, contentType);
+        File tf = convertScaledImage(category, width, height, attach, f, contentType);
 
         File result = tf;
         if(tf == null) {
@@ -271,7 +271,7 @@ public class FiroAssetResource {
 
     }
 
-    private File convertScaledImage(FiroCabinet cabinet, Integer width, Integer height, FiroFile attach, File f, String contentType) {
+    private File convertScaledImage(FiroCategory category, Integer width, Integer height, FiroFile attach, File f, String contentType) {
         if(width == null) {
             width = 0;
         }
@@ -283,7 +283,7 @@ public class FiroAssetResource {
         if(width > 0 || height > 0) {
             boolean imageCreated = false;
 
-            String fullPath = Paths.get(cabinet.getDirectoryPathPolicy().getBaseDir(), attach.getSavedDir(), "scaled_" + attach.getId()).toString();
+            String fullPath = Paths.get(category.getDirectoryPathPolicy().getBaseDir(), attach.getSavedDir(), "scaled_" + attach.getId()).toString();
 
             String scaledName = width + "_" + height;
 
@@ -294,7 +294,7 @@ public class FiroAssetResource {
                     return null;
                 }
                 try {
-                    tf = cabinet.read(Paths.get(fullPath, scaledName).toString());
+                    tf = category.read(Paths.get(fullPath, scaledName).toString());
                 }catch (Exception ignore) {}
 
                 if(tf != null) {
@@ -322,7 +322,7 @@ public class FiroAssetResource {
                     imageCreated = true;
                 }
 
-                cabinet.write(fullPath, scaledName, new FileInputStream(tf));
+                category.write(fullPath, scaledName, new FileInputStream(tf));
             } catch (Exception ignore) {
                 log.warn(ignore.getMessage(), ignore);
             }

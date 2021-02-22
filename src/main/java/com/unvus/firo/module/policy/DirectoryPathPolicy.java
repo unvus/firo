@@ -11,5 +11,5 @@ public interface DirectoryPathPolicy {
     String getBaseDir();
     String getSubDir();
     String getSubDir(Object param);
-    String getFullDir(String room, String cabinet, LocalDateTime date);
+    String getFullDir(String domain, String category, LocalDateTime date);
 }

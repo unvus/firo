@@ -1,11 +1,9 @@
 package com.unvus.firo.annotation;
 
-import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.AttachContainer;
 import com.unvus.firo.module.service.FiroService;
 import com.unvus.firo.util.FiroWebUtil;
 import com.unvus.util.DateTools;
-import com.unvus.util.JsonUtil;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -14,12 +12,8 @@ import org.aspectj.lang.annotation.Around;
 import org.aspectj.lang.annotation.Aspect;
 import org.aspectj.lang.reflect.MethodSignature;
 import org.springframework.stereotype.Component;
-import org.springframework.web.util.ContentCachingRequestWrapper;
 
-import javax.servlet.http.HttpServletRequest;
-import java.io.IOException;
 import java.lang.annotation.Annotation;
-import java.lang.reflect.AnnotatedType;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -27,7 +21,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 
 @Slf4j
 @Aspect
@@ -42,7 +35,7 @@ public class FiroUploadAspect {
         Object result = joinPoint.proceed();
         try {
             List<Object> targetList = new ArrayList<>();
-            extractFiroRoomObject(domain, targetList);
+            extractFiroDomainObject(domain, targetList);
 
             upload(targetList, null);
         } finally {
@@ -60,11 +53,11 @@ public class FiroUploadAspect {
             Method method = signature.getMethod();
 
             int idx = 0;
-            FiroRoom parameterAnnotation = null;
+            FiroDomain parameterAnnotation = null;
             for(Annotation[] methodAnnotations : method.getParameterAnnotations()) {
                 for(Annotation methodAnnotation : methodAnnotations) {
-                    if(methodAnnotation.annotationType().equals(FiroRoom.class)) {
-                        parameterAnnotation = (FiroRoom)methodAnnotation;
+                    if(methodAnnotation.annotationType().equals(FiroDomain.class)) {
+                        parameterAnnotation = (FiroDomain)methodAnnotation;
                         break;
                     }
                 }
@@ -78,12 +71,12 @@ public class FiroUploadAspect {
 
             if(parameterAnnotation != null) {
                 targetList.add(args[idx]);
-                extractFiroRoomObject(args[idx], targetList);
+                extractFiroDomainObject(args[idx], targetList);
                 upload(targetList, parameterAnnotation);
             }else {
                 for(Object arg: args) {
-                    if(arg.getClass().isAnnotationPresent(FiroRoom.class)) {
-                        extractFiroRoomObject(arg, targetList);
+                    if(arg.getClass().isAnnotationPresent(FiroDomain.class)) {
+                        extractFiroDomainObject(arg, targetList);
                     }
                 }
 
@@ -97,52 +90,52 @@ public class FiroUploadAspect {
     }
 
 
-    private void upload(List<Object> targetList, FiroRoom firoRoomForArgs) throws Exception {
+    private void upload(List<Object> targetList, FiroDomain firoDomainForArgs) throws Exception {
         AttachContainer attachContainer = FiroWebUtil.getAttachContainer();
         int index = 0;
         for(Object target: targetList) {
             Class klass = target.getClass();
 
-            FiroRoom firoRoom = (FiroRoom) klass.getAnnotation(FiroRoom.class);
+            FiroDomain firoDomain = (FiroDomain) klass.getAnnotation(FiroDomain.class);
 
-            if(index == 0 && firoRoomForArgs != null) {
-                firoRoom = firoRoomForArgs;
+            if(index == 0 && firoDomainForArgs != null) {
+                firoDomain = firoDomainForArgs;
             }
 
-            Field roomKeyField = getAnnotatedField(target, FiroRoomKey.class);
+            Field domainKeyField = getAnnotatedField(target, FiroDomainKey.class);
             Long refKey;
-            if(roomKeyField != null) {
-                refKey = (Long)PropertyUtils.getProperty(target, roomKeyField.getName());
+            if(domainKeyField != null) {
+                refKey = (Long)PropertyUtils.getProperty(target, domainKeyField.getName());
             }else {
 
-                refKey = (Long)PropertyUtils.getProperty(target, firoRoom.keyFieldName());
+                refKey = (Long)PropertyUtils.getProperty(target, firoDomain.keyFieldName());
             }
 
-            Field roomDateField = getAnnotatedField(target, FiroRoomDate.class);
+            Field domainDateField = getAnnotatedField(target, FiroDomainDate.class);
             Object date;
-            if (roomDateField != null) {
-                date = PropertyUtils.getProperty(target, roomDateField.getName());
+            if (domainDateField != null) {
+                date = PropertyUtils.getProperty(target, domainDateField.getName());
             } else {
-                date = PropertyUtils.getProperty(target, firoRoom.dateFieldName());
+                date = PropertyUtils.getProperty(target, firoDomain.dateFieldName());
             }
             if(date instanceof LocalDate) {
                 date = DateTools.convert((LocalDate) date, DateTools.ConvertTo.LOCAL_DATE_TIME);
             }
 
-            firoService.save(refKey, attachContainer.get(firoRoom.value()), (LocalDateTime)date);
+            firoService.save(refKey, attachContainer.get(firoDomain.value()), (LocalDateTime)date);
             index++;
         }
     }
 
-    private void extractFiroRoomObject(Object source, List<Object> resultList) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    private void extractFiroDomainObject(Object source, List<Object> resultList) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
-        if(source != null && source.getClass().isAnnotationPresent(FiroRoom.class)) {
+        if(source != null && source.getClass().isAnnotationPresent(FiroDomain.class)) {
             resultList.add(source);
         }
         for(Field field  : source.getClass().getDeclaredFields()) {
             Class klass = field.getClass();
             if(!klass.isPrimitive() && !klass.getPackage().getName().startsWith("java.")) {
-                extractFiroRoomObject(PropertyUtils.getProperty(source, field.getName()), resultList);
+                extractFiroDomainObject(PropertyUtils.getProperty(source, field.getName()), resultList);
             }
         }
     }

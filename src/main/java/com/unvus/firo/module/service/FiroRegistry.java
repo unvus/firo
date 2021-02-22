@@ -4,8 +4,8 @@ import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
-import com.unvus.firo.module.service.domain.FiroCabinet;
-import com.unvus.firo.module.service.domain.FiroRoom;
+import com.unvus.firo.module.service.domain.FiroCategory;
+import com.unvus.firo.module.service.domain.FiroDomain;
 import com.unvus.firo.module.service.domain.SecureAccessFunc;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.plugin.core.PluginRegistry;
@@ -20,11 +20,11 @@ public class FiroRegistry {
 
     private final static FiroRegistry INSTANCE = new FiroRegistry();
 
-    public static final String _DEFAULT_CABINET_NAME = "default";
+    public static final String _DEFAULT_CATEGORY_NAME = "default";
 
     protected static PluginRegistry<Adapter, AdapterType> adapterPluginRegistry;
 
-    protected static Map<String, FiroRoom> roomMap = new HashMap();
+    protected static Map<String, FiroDomain> domainMap = new HashMap();
 
     protected static String defaultDirectUrl;
 
@@ -83,21 +83,21 @@ public class FiroRegistry {
         return defaultDirectUrl;
     }
 
-    public static String getDirectUrl(String roomCode, String cabinetCode) {
+    public static String getDirectUrl(String domainCode, String categoryCode) {
         String result = defaultDirectUrl;
-        if(StringUtils.isBlank(roomCode)) {
+        if(StringUtils.isBlank(domainCode)) {
             return result;
         }
 
-        FiroRoom room = get(roomCode);
-        if(room != null) {
-            result = room.getDirectUrl();
-            if (StringUtils.isBlank(cabinetCode)) {
+        FiroDomain domain = get(domainCode);
+        if(domain != null) {
+            result = domain.getDirectUrl();
+            if (StringUtils.isBlank(categoryCode)) {
                 return result;
             }
-            FiroCabinet cabinet = room.getCabinet(cabinetCode);
-            if(cabinet != null) {
-                result = cabinet.getDirectUrl();
+            FiroCategory category = domain.getCategory(categoryCode);
+            if(category != null) {
+                result = category.getDirectUrl();
             }
         }
         return result;
@@ -115,22 +115,22 @@ public class FiroRegistry {
         return FiroRegistry.directoryPathPolicy;
     }
 
-    public static Map<String, FiroRoom> getAllRoom() {
-        return roomMap;
+    public static Map<String, FiroDomain> getAllDomain() {
+        return domainMap;
     }
 
-    public static FiroRoom get(String roomCode) {
-        return roomMap.containsKey(roomCode) ? roomMap.get(roomCode) : createDefaultRoom(roomCode);
+    public static FiroDomain get(String domainCode) {
+        return domainMap.containsKey(domainCode) ? domainMap.get(domainCode) : createDefaultDomain(domainCode);
     }
 
-    public static FiroCabinet get(String roomCode, String cabinetCode) {
-        FiroRoom firoRoom = FiroRegistry.get(roomCode);
-        FiroCabinet cabinet = firoRoom.getCabinet(cabinetCode);
-        if(cabinet == null) {
-            cabinet = FiroCabinet.builder(firoRoom, cabinetCode).build();
-            firoRoom.addCabinet(cabinet);
+    public static FiroCategory get(String domainCode, String categoryCode) {
+        FiroDomain firoDomain = FiroRegistry.get(domainCode);
+        FiroCategory category = firoDomain.getCategory(categoryCode);
+        if(category == null) {
+            category = FiroCategory.builder(firoDomain, categoryCode).build();
+            firoDomain.addCategory(category);
         }
-        return cabinet;
+        return category;
     }
 
 
@@ -138,21 +138,21 @@ public class FiroRegistry {
         return FiroRegistry.secret;
     }
 
-    public static FiroRegistry add(FiroRoom firoRoom) {
-        if(firoRoom.getAdapter() == null) {
-            firoRoom.setAdapter(getDefaultAdapter());
+    public static FiroRegistry add(FiroDomain firoDomain) {
+        if(firoDomain.getAdapter() == null) {
+            firoDomain.setAdapter(getDefaultAdapter());
         }
 
-        roomMap.put(firoRoom.getCode(), firoRoom);
+        domainMap.put(firoDomain.getCode(), firoDomain);
         return INSTANCE;
     }
 
-    protected static FiroRoom createDefaultRoom(String roomCode) {
-        FiroRoom room = FiroRoom.builder(roomCode).build();
+    protected static FiroDomain createDefaultDomain(String domainCode) {
+        FiroDomain domain = FiroDomain.builder(domainCode).build();
 
-        roomMap.put(roomCode, room);
+        domainMap.put(domainCode, domain);
 
-        return room;
+        return domain;
     }
 
 }

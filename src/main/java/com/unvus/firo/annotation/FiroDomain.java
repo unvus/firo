@@ -7,7 +7,7 @@ import java.lang.annotation.Target;
 
 @Retention(RetentionPolicy.RUNTIME)
 @Target({ElementType.TYPE, ElementType.PARAMETER})
-public @interface FiroRoom {
+public @interface FiroDomain {
     String value();
 
     String keyFieldName() default "id";

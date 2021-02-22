@@ -76,7 +76,7 @@ public class DateDirectoryPathPolicy implements DirectoryPathPolicy {
     }
 
     @Override
-    public String getFullDir(String room, String cabinet, LocalDateTime date) {
-        return getBaseDir() + FILE_SEP + room + FILE_SEP + getSubDir(date);
+    public String getFullDir(String domain, String category, LocalDateTime date) {
+        return getBaseDir() + FILE_SEP + domain + FILE_SEP + getSubDir(date);
     }
 }

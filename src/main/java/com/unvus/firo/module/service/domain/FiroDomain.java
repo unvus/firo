@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 @Data
-public class FiroRoom {
+public class FiroDomain {
 
     private String code;
 
@@ -19,15 +19,15 @@ public class FiroRoom {
 
     private DirectoryPathPolicy directoryPathPolicy;
 
-    private Map<String, FiroCabinet> cabinetMap = new HashMap();
+    private Map<String, FiroCategory> categoryMap = new HashMap();
 
     private SecureAccessFunc secureAccessFunc;
 
-    private FiroRoom(String code) {
+    private FiroDomain(String code) {
         this.code = code;
     }
 
-    private FiroRoom(String code, String directUrl, Adapter adapter, DirectoryPathPolicy directoryPathPolicy, SecureAccessFunc secureAccessFunc) {
+    private FiroDomain(String code, String directUrl, Adapter adapter, DirectoryPathPolicy directoryPathPolicy, SecureAccessFunc secureAccessFunc) {
         this.code = code;
         this.directUrl = directUrl;
         this.adapter = adapter;
@@ -35,40 +35,40 @@ public class FiroRoom {
         this.secureAccessFunc = secureAccessFunc;
     }
 
-    public FiroRoom addCabinet(String code) {
-        FiroCabinet cabinet = FiroCabinet
+    public FiroDomain addCategory(String code) {
+        FiroCategory category = FiroCategory
             .builder(this, code)
             .directoryPathPolicy(directoryPathPolicy)
             .build();
 
-        cabinetMap.put(code, cabinet);
+        categoryMap.put(code, category);
         return this;
     }
 
-    public FiroRoom addCabinet(FiroCabinet cabinet) {
-        if(!this.code.equals(cabinet.getRoom().getCode())) {
-            throw new RuntimeException("does not match for this room : invalid room code");
+    public FiroDomain addCategory(FiroCategory category) {
+        if(!this.code.equals(category.getDomain().getCode())) {
+            throw new RuntimeException("does not match for this domain : invalid domain code");
         }
-        cabinetMap.put(cabinet.getCode(), cabinet);
+        categoryMap.put(category.getCode(), category);
         return this;
     }
 
-    public FiroCabinet getCabinet(String cabinetCode) {
-        if(cabinetCode == null) {
+    public FiroCategory getCategory(String code) {
+        if(code == null) {
             return null;
         }
-        return cabinetMap.get(cabinetCode);
+        return categoryMap.get(code);
     }
 
-    public Map<String, FiroCabinet> getAllCabinet() {
-        return cabinetMap;
+    public Map<String, FiroCategory> getAllCategory() {
+        return categoryMap;
     }
 
-    public static FiroRoomBuilder builder(String code) {
-        return new FiroRoomBuilder(code);
+    public static FiroDomainBuilder builder(String code) {
+        return new FiroDomainBuilder(code);
     }
 
-    public static class FiroRoomBuilder {
+    public static class FiroDomainBuilder {
         private String code;
 
         private String directUrl;
@@ -79,31 +79,31 @@ public class FiroRoom {
 
         private SecureAccessFunc secureAccessFunc;
 
-        public FiroRoomBuilder(String code) {
+        public FiroDomainBuilder(String code) {
             this.code = code;
         }
 
-        public FiroRoomBuilder directUrl(String directUrl) {
+        public FiroDomainBuilder directUrl(String directUrl) {
             this.directUrl = directUrl;
             return this;
         }
 
-        public FiroRoomBuilder adapter(Adapter adapter) {
+        public FiroDomainBuilder adapter(Adapter adapter) {
             this.adapter = adapter;
             return this;
         }
 
-        public FiroRoomBuilder directoryPathPolicy(DirectoryPathPolicy directoryPathPolicy) {
+        public FiroDomainBuilder directoryPathPolicy(DirectoryPathPolicy directoryPathPolicy) {
             this.directoryPathPolicy = directoryPathPolicy;
             return this;
         }
 
-        public FiroRoomBuilder secureAccessFunc(SecureAccessFunc secureAccessFunc) {
+        public FiroDomainBuilder secureAccessFunc(SecureAccessFunc secureAccessFunc) {
             this.secureAccessFunc = secureAccessFunc;
             return this;
         }
 
-        public FiroRoom build() {
+        public FiroDomain build() {
             if (directUrl == null) {
                 directUrl = FiroRegistry.getDefaultDirectUrl();
             }
@@ -120,9 +120,9 @@ public class FiroRoom {
                 secureAccessFunc = FiroRegistry.getDefaultSecureAccessFunc();
             }
 
-            FiroRoom room = new FiroRoom(code, directUrl, adapter, directoryPathPolicy, secureAccessFunc);
-            room.addCabinet(FiroRegistry._DEFAULT_CABINET_NAME);
-            return room;
+            FiroDomain domain = new FiroDomain(code, directUrl, adapter, directoryPathPolicy, secureAccessFunc);
+            domain.addCategory(FiroRegistry._DEFAULT_CATEGORY_NAME);
+            return domain;
         }
     }
 

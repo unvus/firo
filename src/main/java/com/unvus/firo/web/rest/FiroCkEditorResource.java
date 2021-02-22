@@ -1,7 +1,7 @@
 package com.unvus.firo.web.rest;
 
 import com.unvus.firo.module.service.FiroRegistry;
-import com.unvus.firo.module.service.domain.FiroCabinet;
+import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.service.FiroService;
 import com.unvus.firo.util.FiroWebUtil;
 import lombok.extern.slf4j.Slf4j;
@@ -31,7 +31,7 @@ public class FiroCkEditorResource {
 
 
     private static final String CK_IMG_URL = "/assets/firo/editor/image";
-    public static final String ROOM_CODE = "ckupload";
+    public static final String DOMAIN_CODE = "ckupload";
 
     public static final String CKEDITOR_RESULT =
         "<script type=\"text/javascript\">" +
@@ -48,7 +48,7 @@ public class FiroCkEditorResource {
         value="/api/firo/ckupload/dnd",
         produces    = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> ckUploadDrop(MultipartFile upload, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String filename = firoService.uploadEditorImage(upload, ROOM_CODE);
+        String filename = firoService.uploadEditorImage(upload, DOMAIN_CODE);
 
         // drag & drop
         Map<String, Object> resultMap = new HashMap<>();
@@ -65,7 +65,7 @@ public class FiroCkEditorResource {
         produces = MediaType.TEXT_HTML_VALUE)
     @ResponseBody
     public String upload(MultipartFile upload, HttpServletRequest request, HttpServletResponse response) throws Exception {
-        String filename = firoService.uploadEditorImage(upload, ROOM_CODE);
+        String filename = firoService.uploadEditorImage(upload, DOMAIN_CODE);
 
         // dialog
         response.setContentType("text/html;charset=UTF-8");
@@ -86,8 +86,8 @@ public class FiroCkEditorResource {
         String filePath = (String) request.getAttribute(HandlerMapping.PATH_WITHIN_HANDLER_MAPPING_ATTRIBUTE);
 
         filePath = StringUtils.substringAfter(filePath, CK_IMG_URL);
-        FiroCabinet cabinet = FiroRegistry.get(ROOM_CODE, "default");
-        File f = cabinet.read(ROOM_CODE + filePath);
+        FiroCategory category = FiroRegistry.get(DOMAIN_CODE, "default");
+        File f = category.read(DOMAIN_CODE + filePath);
 
         if (f == null) {
             return;

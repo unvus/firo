@@ -6,22 +6,22 @@ import java.util.List;
 
 public class AttachBag extends HashMap<String, List<FiroFile>> implements Serializable {
 
-    private String roomCode;
+    private String domainCode;
 
 
     public AttachBag() {
     }
 
-    public AttachBag(String roomCode) {
-        this.roomCode = roomCode;
+    public AttachBag(String domainCode) {
+        this.domainCode = domainCode;
     }
 
-    public void setRoomCode(String roomCode) {
-        this.roomCode = roomCode;
+    public void setDomainCode(String domainCode) {
+        this.domainCode = domainCode;
     }
 
-    public String getRoomCode() {
-        return roomCode;
+    public String getDomainCode() {
+        return domainCode;
     }
 
     public FiroFile one(String mapCode) {

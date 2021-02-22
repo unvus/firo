@@ -10,10 +10,10 @@ import java.io.File;
 import java.io.InputStream;
 import java.time.LocalDateTime;
 
-public class FiroCabinet {
+public class FiroCategory {
 
     @Getter
-    private FiroRoom room;
+    private FiroDomain domain;
 
     @Getter
     private String code;
@@ -37,10 +37,10 @@ public class FiroCabinet {
     @Setter
     private SecureAccessFunc secureAccessFunc;
 
-    FiroCabinet(FiroRoom room, String code, String directUrl,
-                Adapter adapter, DirectoryPathPolicy directoryPathPolicy,
-                FiroFilterChain filterChain, SecureAccessFunc secureAccessFunc) {
-        this.room = room;
+    FiroCategory(FiroDomain domain, String code, String directUrl,
+                 Adapter adapter, DirectoryPathPolicy directoryPathPolicy,
+                 FiroFilterChain filterChain, SecureAccessFunc secureAccessFunc) {
+        this.domain = domain;
         this.code = code;
         this.directUrl = directUrl;
         this.adapter = adapter;
@@ -49,12 +49,12 @@ public class FiroCabinet {
         this.secureAccessFunc = secureAccessFunc;
     }
 
-    public static FiroCabinetBuilder builder(FiroRoom room, String cabinetCode) {
-        return new FiroCabinetBuilder(room, cabinetCode);
+    public static FiroCategoryBuilder builder(FiroDomain domain, String categoryCode) {
+        return new FiroCategoryBuilder(domain, categoryCode);
     }
 
-    public static class FiroCabinetBuilder {
-        private FiroRoom room;
+    public static class FiroCategoryBuilder {
+        private FiroDomain domain;
         private String code;
         private String directUrl;
         private Adapter adapter;
@@ -62,57 +62,57 @@ public class FiroCabinet {
         private FiroFilterChain filterChain;
         private SecureAccessFunc secureAccessFunc;
 
-        public FiroCabinetBuilder(FiroRoom room, String code) {
-            this.room = room;
+        public FiroCategoryBuilder(FiroDomain domain, String code) {
+            this.domain = domain;
             this.code = code;
         }
 
-        public FiroCabinetBuilder directUrl(String directUrl) {
+        public FiroCategoryBuilder directUrl(String directUrl) {
             this.directUrl = directUrl;
             return this;
         }
 
-        public FiroCabinetBuilder adapter(Adapter adapter) {
+        public FiroCategoryBuilder adapter(Adapter adapter) {
             this.adapter = adapter;
             return this;
         }
 
-        public FiroCabinetBuilder directoryPathPolicy(DirectoryPathPolicy directoryPathPolicy) {
+        public FiroCategoryBuilder directoryPathPolicy(DirectoryPathPolicy directoryPathPolicy) {
             this.directoryPathPolicy = directoryPathPolicy;
             return this;
         }
 
-        public FiroCabinetBuilder filterChain(FiroFilterChain filterChain) {
+        public FiroCategoryBuilder filterChain(FiroFilterChain filterChain) {
             this.filterChain = filterChain;
             return this;
         }
 
-        public FiroCabinetBuilder secureAccessFunc(SecureAccessFunc secureAccessFunc) {
+        public FiroCategoryBuilder secureAccessFunc(SecureAccessFunc secureAccessFunc) {
             this.secureAccessFunc = secureAccessFunc;
             return this;
         }
 
-        public FiroCabinet build() {
+        public FiroCategory build() {
             if (code == null) {
                 code = "default";
             }
             if (directUrl == null) {
-                directUrl = room.getDirectUrl();
+                directUrl = domain.getDirectUrl();
             }
 
             if (directoryPathPolicy == null) {
-                directoryPathPolicy = room.getDirectoryPathPolicy();
+                directoryPathPolicy = domain.getDirectoryPathPolicy();
             }
 
             if (adapter == null) {
-                adapter = room.getAdapter();
+                adapter = domain.getAdapter();
             }
 
             if (secureAccessFunc == null) {
-                secureAccessFunc = room.getSecureAccessFunc();
+                secureAccessFunc = domain.getSecureAccessFunc();
             }
 
-            return new FiroCabinet(room, code, directUrl, adapter, directoryPathPolicy, filterChain, secureAccessFunc);
+            return new FiroCategory(domain, code, directUrl, adapter, directoryPathPolicy, filterChain, secureAccessFunc);
         }
     }
 
@@ -145,6 +145,6 @@ public class FiroCabinet {
     }
 
     public String getFullDir(LocalDateTime date) {
-        return this.directoryPathPolicy.getFullDir(this.room.getCode(), this.getCode(), date);
+        return this.directoryPathPolicy.getFullDir(this.domain.getCode(), this.getCode(), date);
     }
 }

@@ -7,10 +7,10 @@ import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.filter.FiroFilter;
 import com.unvus.firo.module.filter.FiroFilterChain;
 import com.unvus.firo.module.service.domain.AttachBag;
-import com.unvus.firo.module.service.domain.FiroCabinet;
+import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.FiroService;
-import com.unvus.firo.module.service.domain.FiroRoom;
+import com.unvus.firo.module.service.domain.FiroDomain;
 import com.unvus.util.FieldMap;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -43,35 +43,33 @@ public class FiroApiResource {
      * GET    /attach/{refType}/{refKey} : 첨부 리스트 조회
      */
     @GetMapping(value = "/config", produces = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<FieldMap> getConfig(@RequestParam Map<String, Object> param,
-                                               @RequestParam(value = "roomKeyList", required = false) List<Long> roomKeyList,
-                                               @RequestParam(value = "cabinetList", required = false) List<String> cabinetList) throws Exception {
+    public ResponseEntity<FieldMap> getConfig() throws Exception {
         FieldMap result = new FieldMap();
         result.put("directUrl", FiroRegistry.getDefaultDirectUrl());
 //        result.put("secret", FiroRegistry.getSecret());
 
-        Map<String, FiroRoom> firoRoomMap = FiroRegistry.getAllRoom();
+        Map<String, FiroDomain> firoDomainMap = FiroRegistry.getAllDomain();
 
-        FieldMap rooms = new FieldMap();
+        FieldMap domains = new FieldMap();
 
-        for(FiroRoom room: firoRoomMap.values()) {
-            FieldMap roomMap = new FieldMap();
-            roomMap.put("code", room.getCode());
-            roomMap.put("directUrl", room.getDirectUrl());
+        for(FiroDomain domain: firoDomainMap.values()) {
+            FieldMap domainMap = new FieldMap();
+            domainMap.put("code", domain.getCode());
+            domainMap.put("directUrl", domain.getDirectUrl());
 
 
-            FieldMap cabinets = new FieldMap();
-            roomMap.put("cabinetMap", cabinets);
-            for(FiroCabinet cabinet : room.getAllCabinet().values()) {
-                FieldMap cabinetMap = new FieldMap();
-                cabinetMap.put("code", cabinet.getCode());
-                cabinetMap.put("directUrl", cabinet.getDirectUrl());
-                cabinets.put(cabinet.getCode(), cabinetMap);
+            FieldMap firoCategoryMap = new FieldMap();
+            domainMap.put("categoryMap", firoCategoryMap);
+            for(FiroCategory category : domain.getAllCategory().values()) {
+                FieldMap categoryMap = new FieldMap();
+                categoryMap.put("code", category.getCode());
+                categoryMap.put("directUrl", category.getDirectUrl());
+                firoCategoryMap.put(category.getCode(), categoryMap);
             }
-            rooms.put(room.getCode(), roomMap);
+            domains.put(domain.getCode(), domainMap);
         }
 
-        result.put("roomMap", rooms);
+        result.put("domainMap", domains);
 
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
@@ -122,10 +120,10 @@ public class FiroApiResource {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PostMapping(value = "/attach/{roomName}/{roomKey}")
+    @PostMapping(value = "/attach/{domainName}/{domainKey}")
     public ResponseEntity<Map<String, Object>> uploadSave(
-        @PathVariable("roomName") String refType,
-        @PathVariable("roomKey") Long refKey,
+        @PathVariable("domainName") String refType,
+        @PathVariable("domainKey") Long refKey,
         @RequestBody AttachBag attachBag) throws Exception {
 
         List<FiroFile>  attachList = firoService.save(refKey, attachBag, LocalDateTime.now());
@@ -167,10 +165,10 @@ public class FiroApiResource {
     @GetMapping(value="/attach",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<FiroFile>> list(@RequestParam Map<String, Object> param,
-                                               @RequestParam(value = "roomKeyList", required = false) List<Long> roomKeyList,
-                                               @RequestParam(value = "cabinetList", required = false) List<String> cabinetList) throws Exception{
-        param.put("roomKeyList", roomKeyList);
-        param.put("cabinetList", cabinetList);
+                                               @RequestParam(value = "domainKeyList", required = false) List<Long> domainKeyList,
+                                               @RequestParam(value = "categoryList", required = false) List<String> categoryList) throws Exception{
+        param.put("domainKeyList", domainKeyList);
+        param.put("categoryList", categoryList);
         List<FiroFile> list = firoService.listAttach(param);
         return new ResponseEntity<List<FiroFile>>(list, HttpStatus.OK);
     }
@@ -182,11 +180,11 @@ public class FiroApiResource {
      * @param refType 제품 아이디 (시퀀스키값)
      * @return 제품 객체
      */
-    @GetMapping(value = "/attach/{roomName}/{roomKey}",
+    @GetMapping(value = "/attach/{domainName}/{domainKey}",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AttachBag> getAttach(HttpServletRequest request,
-                                                     @PathVariable("roomName") String refType,
-                                                     @PathVariable("roomKey") Long refKey) {
+                                                     @PathVariable("domainName") String refType,
+                                                     @PathVariable("domainKey") Long refKey) {
 
         return getAttach(request, refType, refKey, null, null);
     }
@@ -198,18 +196,18 @@ public class FiroApiResource {
      * @param refType 제품 아이디 (시퀀스키값)
      * @return 제품 객체
      */
-    @GetMapping(value = "/attach/{roomName}/{roomKey}/{cabinetName}",
+    @GetMapping(value = "/attach/{domainName}/{domainKey}/{categoryName}",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AttachBag> getAttach(HttpServletRequest request,
-                                                     @PathVariable("roomName") String refType,
-                                                     @PathVariable("roomKey") Long refKey,
-                                                     @PathVariable("cabinetName") String cabinetName,
+                                                     @PathVariable("domainName") String refType,
+                                                     @PathVariable("domainKey") Long refKey,
+                                                     @PathVariable("categoryName") String categoryName,
                                                      @RequestParam(value="q", required = false) Map<String, Object> param) {
-        if(param != null && param.containsKey("roomKeys")){
+        if(param != null && param.containsKey("domainKeys")){
             refKey = null;
         }
 
-        AttachBag bag = firoService.getAttachBagByRef(refType, refKey, cabinetName, param);
+        AttachBag bag = firoService.getAttachBagByRef(refType, refKey, categoryName, param);
 
         return Optional.ofNullable(bag)
             .map(product -> new ResponseEntity<>(product, HttpStatus.OK))
