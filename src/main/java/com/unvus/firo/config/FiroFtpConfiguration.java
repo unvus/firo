@@ -12,7 +12,7 @@ import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 
 @Configuration
-@ConditionalOnProperty(prefix="unvus.firo.ftp", name = "host")
+@ConditionalOnProperty(prefix="firo.ftp", name = "host")
 public class FiroFtpConfiguration {
 
     private final FiroProperties firoProperties;

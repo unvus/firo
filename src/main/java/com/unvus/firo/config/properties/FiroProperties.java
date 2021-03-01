@@ -16,7 +16,7 @@ import static org.apache.commons.net.ftp.FTPClient.PASSIVE_LOCAL_DATA_CONNECTION
 @Getter
 @Setter
 @Component
-@ConfigurationProperties(prefix = "unvus.firo")
+@ConfigurationProperties(prefix = "firo")
 public class FiroProperties {
 
 
