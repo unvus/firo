@@ -4,6 +4,7 @@ import com.unvus.firo.module.service.domain.AttachContainer;
 import com.unvus.firo.module.service.FiroService;
 import com.unvus.firo.util.FiroWebUtil;
 import com.unvus.util.DateTools;
+import com.unvus.util.FieldMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -19,8 +20,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
+import java.util.*;
 
 @Slf4j
 @Aspect
@@ -32,12 +32,13 @@ public class FiroUploadAspect {
 
     @Around("execution(public * *(.., @FiroUpload (*), ..)) && args(domain, ..)")
     public Object pointcut(ProceedingJoinPoint joinPoint, Object domain) throws Throwable {
+        FieldMap bodyMap = FiroWebUtil.getRequestBodyMap();
         Object result = joinPoint.proceed();
         try {
-            List<Object> targetList = new ArrayList<>();
-            extractFiroDomainObject(domain, targetList);
+            Map<Object, AttachContainer> targetMap = new HashMap<>();
+            extractFiroDomainObject(domain, targetMap, bodyMap);
 
-            upload(targetList, null);
+            upload(targetMap, null);
         } finally {
             return result;
         }
@@ -45,6 +46,9 @@ public class FiroUploadAspect {
 
     @Around("@annotation(firoUpload)")
     public Object pointcut(ProceedingJoinPoint joinPoint, FiroUpload firoUpload) throws Throwable {
+        FieldMap bodyMap = FiroWebUtil.getRequestBodyMap();
+
+        // execute method
         Object result = joinPoint.proceed();
         try {
             Object[] args = joinPoint.getArgs();
@@ -52,6 +56,7 @@ public class FiroUploadAspect {
             MethodSignature signature = (MethodSignature) joinPoint.getSignature();
             Method method = signature.getMethod();
 
+            // 메소드 파라미터 중 파라미터 레벨에 FiroDomain 어노테이션이 선언되어 있는 파라미터 구하기
             int idx = 0;
             FiroDomain parameterAnnotation = null;
             for(Annotation[] methodAnnotations : method.getParameterAnnotations()) {
@@ -67,20 +72,21 @@ public class FiroUploadAspect {
                 idx++;
             }
 
-            List<Object> targetList = new ArrayList<>();
+            Map<Object, AttachContainer> targetMap = new HashMap<>();
 
             if(parameterAnnotation != null) {
-                targetList.add(args[idx]);
-                extractFiroDomainObject(args[idx], targetList);
-                upload(targetList, parameterAnnotation);
+                targetMap.put(args[idx], FiroWebUtil.getAttachContainer(bodyMap));
+                extractFiroDomainObject(args[idx], targetMap, bodyMap);
+                upload(targetMap, parameterAnnotation);
             }else {
+                // 메소드 파라미터 중 클래스 레벨에 FiroDomain 어노테이션이 선언되어 있는 파라미터 구하기
                 for(Object arg: args) {
                     if(arg.getClass().isAnnotationPresent(FiroDomain.class)) {
-                        extractFiroDomainObject(arg, targetList);
+                        extractFiroDomainObject(arg, targetMap, bodyMap);
                     }
                 }
 
-                upload(targetList, null);
+                upload(targetMap, null);
             }
 
         } finally {
@@ -89,53 +95,91 @@ public class FiroUploadAspect {
 
     }
 
+    private void upload(Map<Object, AttachContainer> targetMap, FiroDomain firoDomainForArgs) throws Exception {
 
-    private void upload(List<Object> targetList, FiroDomain firoDomainForArgs) throws Exception {
-        AttachContainer attachContainer = FiroWebUtil.getAttachContainer();
         int index = 0;
-        for(Object target: targetList) {
+        for (Map.Entry<Object, AttachContainer> entry : targetMap.entrySet()) {
+            Object target = entry.getKey();
+            AttachContainer attachContainer = entry.getValue();
+
             Class klass = target.getClass();
 
             FiroDomain firoDomain = (FiroDomain) klass.getAnnotation(FiroDomain.class);
 
-            if(index == 0 && firoDomainForArgs != null) {
+            if (index == 0 && firoDomainForArgs != null) {
                 firoDomain = firoDomainForArgs;
             }
 
+            // 현재 도메인 객체의 PK 값 얻기
             Field domainKeyField = getAnnotatedField(target, FiroDomainKey.class);
             Long refKey;
-            if(domainKeyField != null) {
-                refKey = (Long)PropertyUtils.getProperty(target, domainKeyField.getName());
-            }else {
+            if (domainKeyField != null) {
+                refKey = (Long) PropertyUtils.getProperty(target, domainKeyField.getName());
+            } else {
 
-                refKey = (Long)PropertyUtils.getProperty(target, firoDomain.keyFieldName());
+                refKey = (Long) PropertyUtils.getProperty(target, firoDomain.keyFieldName());
             }
 
+            // 현재 도메인 객체의 생성일시 값 얻기
             Field domainDateField = getAnnotatedField(target, FiroDomainDate.class);
             Object date;
-            if (domainDateField != null) {
-                date = PropertyUtils.getProperty(target, domainDateField.getName());
-            } else {
-                date = PropertyUtils.getProperty(target, firoDomain.dateFieldName());
+            try {
+                if (domainDateField != null) {
+                    date = PropertyUtils.getProperty(target, domainDateField.getName());
+                } else {
+                    date = PropertyUtils.getProperty(target, firoDomain.dateFieldName());
+                }
+            } catch (Throwable e) {
+                log.error(e.getMessage(), e);
+                date = LocalDateTime.now();
             }
-            if(date instanceof LocalDate) {
+
+            if (date instanceof LocalDate) {
                 date = DateTools.convert((LocalDate) date, DateTools.ConvertTo.LOCAL_DATE_TIME);
             }
 
-            firoService.save(refKey, attachContainer.get(firoDomain.value()), (LocalDateTime)date);
+            firoService.save(refKey, attachContainer.get(firoDomain.value()), (LocalDateTime) date);
             index++;
         }
     }
 
-    private void extractFiroDomainObject(Object source, List<Object> resultList) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
+    private void extractFiroDomainObject(Object source, Map<Object, AttachContainer> targetMap, Object bodyMap) throws IllegalAccessException, NoSuchMethodException, InvocationTargetException {
 
-        if(source != null && source.getClass().isAnnotationPresent(FiroDomain.class)) {
-            resultList.add(source);
+        if (source == null) {
+            return;
         }
-        for(Field field  : source.getClass().getDeclaredFields()) {
-            Class klass = field.getClass();
-            if(!klass.isPrimitive() && !klass.getPackage().getName().startsWith("java.")) {
-                extractFiroDomainObject(PropertyUtils.getProperty(source, field.getName()), resultList);
+
+        if (source instanceof List<?>) {
+            // source 가 배열이면 iterate 돌면서 재귀호출
+            int idx = 0;
+            for (Object item : (Collection<?>) source) {
+                extractFiroDomainObject(item, targetMap, ((List<?>)bodyMap).get(idx++));
+            }
+        } else if (source.getClass().isAnnotationPresent(FiroDomain.class)) {
+            // source 개체에 FiroDomain 이 선언되어 있으면 대상에 추가
+            if(!targetMap.containsKey(source)) {
+                targetMap.put(source, FiroWebUtil.getAttachContainer((Map) bodyMap));
+            }
+
+            // 현재 객체의 각 필드별로 FiroDomain 후보 색출 및 재귀호출
+            for (Field field : source.getClass().getDeclaredFields()) {
+                Class<?> klass = field.getClass();
+
+                if (Collection.class.isAssignableFrom(field.getType())) {
+                    // 필드가 배열이면 iterate 돌면서 재귀 호출
+                    Collection<?> items = (Collection<?>) PropertyUtils.getProperty(source, field.getName());
+                    if (items == null) {
+                        continue;
+                    }
+                    List<?> bodyItemList = (List<?>) ((Map) bodyMap).get(field.getName());
+                    int idx = 0;
+                    for (Object item : items) {
+                        extractFiroDomainObject(item, targetMap, bodyItemList.get(idx++));
+                    }
+                } else if (!klass.isPrimitive() && !klass.getPackage().getName().startsWith("java.")) {
+                    // 필드가 자바 기본 타입이 아니라면 해당 값을 가지고 재귀호출
+                    extractFiroDomainObject(PropertyUtils.getProperty(source, field.getName()), targetMap, ((Map) bodyMap).get(field.getName()));
+                }
             }
         }
     }

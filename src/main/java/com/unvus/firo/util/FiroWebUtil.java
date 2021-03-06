@@ -2,6 +2,7 @@ package com.unvus.firo.util;
 
 import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.AttachContainer;
+import com.unvus.util.FieldMap;
 import com.unvus.util.JsonUtil;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.io.IOUtils;
@@ -30,6 +31,8 @@ public class FiroWebUtil {
 
 
     public static final String FILE_SEP = System.getProperty("file.separator");
+
+    public static final String ATTACH_CONTAINER_KEY = "attachContainer";
 
     private static int CACHE_PERIOD_UNIT = Calendar.MONTH;
     private static int CACHE_PERIOD_VALUE = 1;
@@ -72,17 +75,10 @@ public class FiroWebUtil {
         response.setHeader("Expires", dateFormat.format(cal.getTime()));
     }
 
-    public static AttachContainer getAttachContainer() throws IOException {
-        HttpServletRequest request = FiroWebUtil.request();
 
-        ContentCachingRequestWrapper requestWrapper = (ContentCachingRequestWrapper) request;
-
-        String body = new String(requestWrapper.getContentAsByteArray());
-
-//        String body = request.getReader().lines().collect(Collectors.joining(System.lineSeparator()));
-
+    public static AttachContainer getAttachContainer(Map body) {
         AttachContainer attachContainer = new AttachContainer();
-        Map<String, Map> map = (Map) JsonUtil.toMap(body).get("attachContainer");
+        Map<String, Map> map = (Map) body.get(ATTACH_CONTAINER_KEY);
 
         for (Map.Entry<String, Map> entry : map.entrySet()) {
             AttachBag attachBag = JsonUtil.toObject(entry.getValue(), AttachBag.class);
@@ -91,6 +87,16 @@ public class FiroWebUtil {
         }
 
         return attachContainer;
+    }
+
+    public static FieldMap getRequestBodyMap() throws IOException {
+        HttpServletRequest request = FiroWebUtil.request();
+
+        ContentCachingRequestWrapper requestWrapper = (ContentCachingRequestWrapper) request;
+
+        String body = new String(requestWrapper.getContentAsByteArray());
+
+        return JsonUtil.toMap(body);
     }
 
     public static void writeFile(HttpServletResponse response, File f) throws IOException {
