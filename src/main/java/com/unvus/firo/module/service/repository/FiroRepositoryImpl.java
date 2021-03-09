@@ -5,8 +5,10 @@ import com.querydsl.core.types.dsl.PathBuilder;
 import com.querydsl.jpa.JPQLQuery;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.domain.QFiroFile;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.data.jpa.repository.support.QuerydslRepositorySupport;
 
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -38,6 +40,19 @@ public class FiroRepositoryImpl extends QuerydslRepositorySupport implements Fir
 
         query.where(builder);
         return query.fetchCount();
+    }
+
+    @Override
+    public List<FiroFile> listAttachByIds(String domain, String category, Collection<Long> refTargetKeyList) {
+        QFiroFile firoFile = QFiroFile.firoFile;
+        BooleanBuilder builder = new BooleanBuilder();
+        builder.and(firoFile.refTarget.eq(domain));
+        if(StringUtils.isNotBlank(category)) {
+            builder.and(firoFile.refTargetType.eq(category));
+        }
+        builder.and(firoFile.refTargetKey.in(refTargetKeyList));
+
+        return from(firoFile).where(builder).fetch();
     }
 
     private BooleanBuilder getBooleanBuilder(Map<String, Object> params) {

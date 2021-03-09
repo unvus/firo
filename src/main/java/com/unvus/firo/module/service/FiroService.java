@@ -1,5 +1,7 @@
 package com.unvus.firo.module.service;
 
+import com.unvus.firo.annotation.FiroDomain;
+import com.unvus.firo.annotation.FiroDomainKey;
 import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.filter.FiroFilterChain;
 import com.unvus.firo.module.service.domain.AttachBag;
@@ -7,6 +9,7 @@ import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.repository.FiroRepository;
 import com.unvus.firo.util.SecureNameUtil;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.io.FilenameUtils;
 import org.apache.commons.io.IOUtils;
@@ -17,9 +20,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
+import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -326,10 +332,8 @@ public class FiroService {
     }
 
     public Map<Long, AttachBag> getAttachBagMapByRef(String refTarget, List<Long> refTargetKeyList) {
-        Map<String, Object> param = new HashMap();
-        param.put("refTarget", refTarget);
-        param.put("domainKeyList", refTargetKeyList);
-        List<FiroFile> list = firoRepository.listAttach(param);
+
+        List<FiroFile> list = firoRepository.listAttachByIds(refTarget, null, refTargetKeyList);
 
         Map<Long, AttachBag> result = new HashMap<>();
 
@@ -345,6 +349,51 @@ public class FiroService {
         }
 
         return result;
+    }
+
+
+    public <T> List<T> injectAttachBag(List<T> list, Class<T> tClass) throws Exception {
+        FiroDomain firoDomain = tClass.getAnnotation(FiroDomain.class);
+
+        // 현재 도메인 객체의 PK 값 얻기
+        Field domainKeyField = getAnnotatedField(tClass, FiroDomainKey.class);
+        final String keyFieldName;
+        if(domainKeyField != null) {
+            keyFieldName = domainKeyField.getName();
+        }else {
+            keyFieldName = firoDomain.keyFieldName();
+        }
+
+        return injectAttachBag(list, firoDomain.value(), keyFieldName);
+    }
+
+
+
+    public <T> List<T> injectAttachBag(List<T> list, String domain, String keyFieldName) throws Exception {
+        if(CollectionUtils.isEmpty(list)) {
+            return list;
+        }
+
+        Map<Long, T> tmap = new HashMap<>();
+        for(T t : list) {
+            tmap.put((Long)PropertyUtils.getProperty(t, keyFieldName), t);
+        }
+
+        List<FiroFile> firoFileList = firoRepository.listAttachByIds(domain, null, tmap.keySet());
+        for(FiroFile attach: firoFileList) {
+            T t = tmap.get(attach.getRefTargetKey());
+            Map meta = (Map)PropertyUtils.getProperty(t, "_meta");
+            if(!meta.containsKey("attachBag")) {
+                meta.put("attachBag", new AttachBag(domain));
+            }
+            AttachBag bag = (AttachBag)meta.get("attachBag");
+            if(!bag.containsKey(attach.getRefTargetType())) {
+                bag.put(attach.getRefTargetType(), new ArrayList<>());
+            }
+            bag.get(attach.getRefTargetType()).add(attach);
+        }
+
+        return list;
     }
 
     public int clearAttachByDomain(String refTarget, Long refTargetKey) throws Exception {
@@ -429,5 +478,23 @@ public class FiroService {
 //        Adapter adapter = adapterPluginRegistry.getPluginFor(endpointType).get();
 //        return adapter;
 //    }
+
+    private Field getAnnotatedField(Object obj, Class annotationClass) {
+        for(Field field  : obj.getClass().getDeclaredFields()) {
+            if (field.isAnnotationPresent(annotationClass)) {
+                return field;
+            }
+        }
+        return null;
+    }
+
+    private Field getAnnotatedField(Class klass, Class annotationClass) {
+        for(Field field  : klass.getDeclaredFields()) {
+            if (field.isAnnotationPresent(annotationClass)) {
+                return field;
+            }
+        }
+        return null;
+    }
 
 }
