@@ -24,6 +24,8 @@ public class FiroProperties {
 
     private String directUrl;
 
+    private Local local = new Local();
+
     private Ftp ftp = new Ftp();
 
     private final DatabaseProperties database = new DatabaseProperties();
@@ -33,6 +35,13 @@ public class FiroProperties {
     public static class Directory {
         private String tmpDir = System.getProperty("java.io.tmpdir");
         private String baseDir = System.getProperty("java.io.tmpdir");
+    }
+
+
+    @Getter
+    @Setter
+    public static class Local {
+        private Directory directory = new Directory();
     }
 
     @Getter
