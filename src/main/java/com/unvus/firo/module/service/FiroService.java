@@ -159,7 +159,12 @@ public class FiroService {
 
                         FiroFile newAttach = persistFile(category, domainKey, index, attach.getDisplayName(), inputFile, date, attach.getExt());
 
-                        category.deleteTemp(attach.getSavedName());
+                        Adapter adapter = FiroRegistry.getAdapter(AdapterType.LOCAL);
+                        adapter.deleteTemp(FiroRegistry.getLocalDirectoryPathPolicy(), attach.getSavedName());
+
+                        if (!category.getAdapter().supports(AdapterType.LOCAL)) {
+                            category.deleteTemp(attach.getSavedName());
+                        }
                         newAttachList.add(newAttach);
                     }
                 }catch (Exception e) {
