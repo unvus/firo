@@ -322,7 +322,7 @@ public class FiroAssetResource {
                     imageCreated = true;
                 }
 
-                category.write(fullPath, scaledName, new FileInputStream(tf), tf.length());
+                category.write(fullPath, scaledName, new FileInputStream(tf), tf.length(), attach.getFileType());
             } catch (Exception ignore) {
                 log.warn(ignore.getMessage(), ignore);
             }

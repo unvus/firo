@@ -39,13 +39,14 @@ public class FiroProperties {
     public static class Directory {
         private String tmpDir = System.getProperty("java.io.tmpdir");
         private String baseDir = System.getProperty("java.io.tmpdir");
+        private String separator = System.getProperty("file.separator");
     }
 
 
     @Getter
     @Setter
     public static class Local {
-        private Directory directory = new Directory();
+        private String directUrl;
     }
 
     @Getter
@@ -57,6 +58,7 @@ public class FiroProperties {
         private String password;
         private int clientMode = PASSIVE_LOCAL_DATA_CONNECTION_MODE;
         private Directory directory = new Directory();
+        private String directUrl;
     }
 
 
@@ -69,6 +71,7 @@ public class FiroProperties {
         private String password;
         private int clientMode = PASSIVE_LOCAL_DATA_CONNECTION_MODE;
         private Directory directory = new Directory();
+        private String directUrl;
     }
 
 
@@ -83,5 +86,6 @@ public class FiroProperties {
         private String compression = "Y"; // default: Y
 
         private Directory directory = new Directory();
+        private String directUrl;
     }
 }

@@ -29,9 +29,6 @@ import java.util.*;
 
 public class FiroWebUtil {
 
-
-    public static final String FILE_SEP = System.getProperty("file.separator");
-
     public static final String ATTACH_CONTAINER_KEY = "attachContainer";
 
     private static int CACHE_PERIOD_UNIT = Calendar.MONTH;

@@ -12,4 +12,5 @@ public interface DirectoryPathPolicy {
     String getSubDir();
     String getSubDir(Object param);
     String getFullDir(String domain, String category, LocalDateTime date);
+    String getSeparator();
 }

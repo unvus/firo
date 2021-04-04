@@ -2,6 +2,9 @@ package com.unvus.firo.module.service;
 
 import com.unvus.firo.annotation.FiroDomain;
 import com.unvus.firo.annotation.FiroDomainKey;
+import com.unvus.firo.config.properties.FiroProperties;
+import com.unvus.firo.module.adapter.Adapter;
+import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.filter.FiroFilterChain;
 import com.unvus.firo.module.service.domain.AttachBag;
@@ -21,12 +24,10 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.*;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @Service
@@ -70,7 +71,9 @@ public class FiroService {
             try {
                 String uuid = UUID.randomUUID().toString();
 
-                File temp = category.writeTemp(uuid, is, file.getSize());
+                // 필터링을 위해 임시파일을 local 에 먼저 저장.
+                Adapter adapter = FiroRegistry.getAdapter(AdapterType.LOCAL);
+                File temp = adapter.writeTemp(FiroRegistry.getLocalDirectoryPathPolicy(), uuid, is, file.getSize(), file.getContentType());
 
                 try {
                     if(filterChain == null || filterChain.size() == 0) {
@@ -83,6 +86,10 @@ public class FiroService {
                 }catch(Exception e) {
                     log.error(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage());
+                }
+
+                if(!category.getAdapter().supports(AdapterType.LOCAL)) {
+                    category.writeTemp(uuid, new FileInputStream(temp), file.getSize(), file.getContentType());
                 }
 
                 return uuid;
@@ -172,14 +179,14 @@ public class FiroService {
         String saveDir = category.getFullDir(date);
 
         // /my/base/domain/2020/11/72/default/
-        saveDir += SecureNameUtil.genDir(category, refTargetKey.toString());
+        saveDir += SecureNameUtil.genDir(category.getDirectoryPathPolicy(), refTargetKey.toString());
 
         String fileName = SecureNameUtil.gen(category, refTargetKey.toString(), index);
 
         String fileType = detectFile(inputFile);
         Long size = inputFile.length();
 
-        category.write(saveDir, fileName, new FileInputStream(inputFile), size);
+        category.write(saveDir, fileName, new FileInputStream(inputFile), size, fileType);
 
 //        getAdapterInstance(null).upload();
         FiroFile attach = new FiroFile();
@@ -216,7 +223,7 @@ public class FiroService {
             String fileName = UUID.randomUUID().toString() + "." + extension;
 
             FiroCategory category = FiroRegistry.get(domainCode, FiroRegistry._DEFAULT_CATEGORY_NAME);
-            category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream(), upload.getSize());
+            category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream(), upload.getSize(), upload.getContentType());
 
             return "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
         }

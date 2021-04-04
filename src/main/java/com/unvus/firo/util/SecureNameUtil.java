@@ -1,5 +1,6 @@
 package com.unvus.firo.util;
 
+import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.policy.impl.DateDirectoryPathPolicy;
 import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.service.domain.FiroCategory;
@@ -33,7 +34,7 @@ public class SecureNameUtil {
         }
     }
 
-    public static String genDir(FiroCategory category, String refTargetKey) {
-        return refTargetKey + DateDirectoryPathPolicy.FILE_SEP;
+    public static String genDir(DirectoryPathPolicy dpp, String refTargetKey) {
+        return refTargetKey + dpp.getSeparator();
     }
 }
