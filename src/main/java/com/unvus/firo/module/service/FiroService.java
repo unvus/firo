@@ -23,6 +23,7 @@ import java.io.*;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.InvalidPathException;
+import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
@@ -69,7 +70,7 @@ public class FiroService {
             try {
                 String uuid = UUID.randomUUID().toString();
 
-                File temp = category.writeTemp(uuid, is);
+                File temp = category.writeTemp(uuid, is, file.getSize());
 
                 try {
                     if(filterChain == null || filterChain.size() == 0) {
@@ -124,6 +125,7 @@ public class FiroService {
             String categoryCode = entry.getKey();
             FiroCategory category = FiroRegistry.get(bag.getDomainCode(), categoryCode);
 
+            String baseDir = category.getDirectoryPathPolicy().getBaseDir();
 
             if(entry.getValue() == null ) {
                 continue;
@@ -133,12 +135,14 @@ public class FiroService {
             for(FiroFile attach : entry.getValue()) {
                 try {
                     if (attach.getId() != null) {
-                        if(!attach.getSavedName().startsWith(index + "_")) {
+                        if(!attach.getSavedName().startsWith(categoryCode + "_" + index + "_")) {
                             // 이미 저장된 파일이지만 index(순서) 가 변경된 경우, 파일 이름을 다시 생성해서 저장한다.
                             FiroFile firoFile = firoRepository.getOne(attach.getId());
                             String newFileName = SecureNameUtil.gen(category, firoFile.getId().toString(), index);
 
-                            category.rename(firoFile.getSavedName(), newFileName);
+                            category.rename(
+                                Paths.get(baseDir, firoFile.getSavedDir(), firoFile.getSavedName()).toString(),
+                                Paths.get(baseDir, firoFile.getSavedDir(), newFileName).toString());
 
                             firoFile.setSavedName(newFileName);
                             firoRepository.save(firoFile);
@@ -175,7 +179,7 @@ public class FiroService {
         String fileType = detectFile(inputFile);
         Long size = inputFile.length();
 
-        category.write(saveDir, fileName, new FileInputStream(inputFile));
+        category.write(saveDir, fileName, new FileInputStream(inputFile), size);
 
 //        getAdapterInstance(null).upload();
         FiroFile attach = new FiroFile();
@@ -212,7 +216,7 @@ public class FiroService {
             String fileName = UUID.randomUUID().toString() + "." + extension;
 
             FiroCategory category = FiroRegistry.get(domainCode, FiroRegistry._DEFAULT_CATEGORY_NAME);
-            category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream());
+            category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream(), upload.getSize());
 
             return "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
         }

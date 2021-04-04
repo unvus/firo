@@ -4,6 +4,7 @@ import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
+import com.unvus.firo.module.policy.impl.DateDirectoryPathPolicy;
 import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.service.domain.FiroDomain;
 import com.unvus.firo.module.service.domain.SecureAccessFunc;
@@ -51,10 +52,50 @@ public class FiroRegistry {
         return INSTANCE;
     }
 
+    public static FiroRegistry from(FiroProperties props, AdapterType adapterType) {
+        DirectoryPathPolicy directoryPathPolicy = null;
+        if (adapterType == AdapterType.LOCAL) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getLocal().getDirectory());
+        }else if (adapterType == AdapterType.FTP) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getFtp().getDirectory());
+        } else if (adapterType == AdapterType.SFTP) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getSftp().getDirectory());
+        } else if (adapterType == AdapterType.S3) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getS3().getDirectory());
+        }
+
+        FiroRegistry.directoryPathPolicy = directoryPathPolicy;
+
+        from(props, directoryPathPolicy, adapterType);
+        return INSTANCE;
+    }
+
     public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = getAdapter(adapterType);
+        if (adapterType == AdapterType.LOCAL) {
+            buildDirectoryPathPolicy(props.getLocal().getDirectory());
+        }
+        return INSTANCE;
+    }
+
+    public static FiroRegistry from(FiroProperties props, Adapter adapter) {
+        DirectoryPathPolicy directoryPathPolicy = null;
+        if (adapter.supports(AdapterType.LOCAL)) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getLocal().getDirectory());
+        } else if (adapter.supports(AdapterType.FTP)) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getFtp().getDirectory());
+        } else if (adapter.supports(AdapterType.SFTP)) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getSftp().getDirectory());
+        } else if (adapter.supports(AdapterType.S3)) {
+            directoryPathPolicy = buildDirectoryPathPolicy(props.getS3().getDirectory());
+        }
+
+        FiroRegistry.directoryPathPolicy = directoryPathPolicy;
+
+        from(props, directoryPathPolicy, adapter);
+
         return INSTANCE;
     }
 
@@ -62,6 +103,7 @@ public class FiroRegistry {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = adapter;
+
         return INSTANCE;
     }
 
@@ -153,6 +195,14 @@ public class FiroRegistry {
         domainMap.put(domainCode, domain);
 
         return domain;
+    }
+
+    public static DirectoryPathPolicy buildDirectoryPathPolicy(FiroProperties.Directory directory) {
+        return new DateDirectoryPathPolicy(
+            DateDirectoryPathPolicy.DATE_SUBDIR_TYPE.YYYY_MM,
+            directory.getBaseDir(),
+            directory.getTmpDir()
+        );
     }
 
 }

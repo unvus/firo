@@ -9,9 +9,9 @@ import java.io.InputStream;
 
 public interface Adapter extends Plugin<AdapterType> {
 
-    File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream out) throws Exception;
+    File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream out, long size) throws Exception;
 
-    void write(String fullDir, String path, InputStream out) throws Exception;
+    void write(String fullDir, String path, InputStream out, long size) throws Exception;
 
     void rename(String from, String to) throws Exception;
 

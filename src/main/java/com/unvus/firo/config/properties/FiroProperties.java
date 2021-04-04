@@ -28,6 +28,10 @@ public class FiroProperties {
 
     private Ftp ftp = new Ftp();
 
+    private Sftp sftp = new Sftp();
+
+    private S3 s3 = new S3();
+
     private final DatabaseProperties database = new DatabaseProperties();
 
     @Getter
@@ -52,6 +56,32 @@ public class FiroProperties {
         private String username;
         private String password;
         private int clientMode = PASSIVE_LOCAL_DATA_CONNECTION_MODE;
+        private Directory directory = new Directory();
     }
 
+
+    @Getter
+    @Setter
+    public static class Sftp {
+        private String host;
+        private int port = 21;
+        private String username;
+        private String password;
+        private int clientMode = PASSIVE_LOCAL_DATA_CONNECTION_MODE;
+        private Directory directory = new Directory();
+    }
+
+
+    @Getter
+    @Setter
+    public static class S3 {
+        private String accessKey;
+        private String secretKey;
+        private String bucket;
+        private String region;
+        private String roleArn;
+        private String compression = "Y"; // default: Y
+
+        private Directory directory = new Directory();
+    }
 }

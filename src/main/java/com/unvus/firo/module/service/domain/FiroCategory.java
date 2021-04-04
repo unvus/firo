@@ -124,12 +124,12 @@ public class FiroCategory {
         return adapter.read(this.directoryPathPolicy, path);
     }
 
-    public File writeTemp(String path, InputStream in) throws Exception {
-        return adapter.writeTemp(this.directoryPathPolicy, path, in);
+    public File writeTemp(String path, InputStream in, long size) throws Exception {
+        return adapter.writeTemp(this.directoryPathPolicy, path, in, size);
     }
 
-    public void write(String fullDir, String path, InputStream in) throws Exception {
-        adapter.write(fullDir, path, in);
+    public void write(String fullDir, String path, InputStream in, long size) throws Exception {
+        adapter.write(fullDir, path, in, size);
     }
 
     public void rename(String from, String to) throws Exception {

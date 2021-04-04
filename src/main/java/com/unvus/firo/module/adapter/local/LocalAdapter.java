@@ -34,7 +34,7 @@ public class LocalAdapter implements Adapter {
     }
 
     @Override
-    public File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream in) throws Exception {
+    public File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream in, long size) throws Exception {
         createDirectoryIfNotExists(directoryPathPolicy.getTempDir());
         Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
         Files.copy(in, fullPath);
@@ -42,7 +42,7 @@ public class LocalAdapter implements Adapter {
     }
 
     @Override
-    public void write(String fullDir, String path, InputStream in) throws Exception {
+    public void write(String fullDir, String path, InputStream in, long size) throws Exception {
         createDirectoryIfNotExists(fullDir);
 
         Files.copy(in, Paths.get(fullDir, path));

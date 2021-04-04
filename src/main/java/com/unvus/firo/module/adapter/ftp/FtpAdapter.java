@@ -56,7 +56,7 @@ public class FtpAdapter implements Adapter {
     }
 
     @Override
-    public File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream in) throws Exception {
+    public File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream in, long size) throws Exception {
         Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
         template
             .execute(session -> {
@@ -71,7 +71,7 @@ public class FtpAdapter implements Adapter {
     }
 
     @Override
-    public void write(String fullDir, String path, InputStream in) throws Exception {
+    public void write(String fullDir, String path, InputStream in, long size) throws Exception {
         Path fullPath = Paths.get(fullDir, path);
         template
             .execute(session -> {
