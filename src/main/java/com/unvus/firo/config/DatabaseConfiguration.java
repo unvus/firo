@@ -61,6 +61,7 @@ public class DatabaseConfiguration {
 
 
     @Bean(name = "firoTransactionManager")
+    @ConditionalOnMissingBean(name = "firoDataSource")
     public PlatformTransactionManager firoTransactionManager() {
         final JpaTransactionManager transactionManager = new JpaTransactionManager();
         transactionManager.setEntityManagerFactory(firoEntityManagerFactory().getObject());
