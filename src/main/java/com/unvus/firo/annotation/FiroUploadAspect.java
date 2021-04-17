@@ -2,8 +2,8 @@ package com.unvus.firo.annotation;
 
 import com.unvus.firo.module.service.domain.AttachContainer;
 import com.unvus.firo.module.service.FiroService;
+import com.unvus.firo.util.FiroUtil;
 import com.unvus.firo.util.FiroWebUtil;
-import com.unvus.util.DateTools;
 import com.unvus.util.FieldMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -18,7 +18,6 @@ import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
 
@@ -102,43 +101,19 @@ public class FiroUploadAspect {
             Object target = entry.getKey();
             AttachContainer attachContainer = entry.getValue();
 
-            Class klass = target.getClass();
-
-            FiroDomain firoDomain = (FiroDomain) klass.getAnnotation(FiroDomain.class);
+            FiroDomain firoDomain = FiroUtil.getFiroDomain(target);
 
             if (index == 0 && firoDomainForArgs != null) {
                 firoDomain = firoDomainForArgs;
             }
 
             // 현재 도메인 객체의 PK 값 얻기
-            Field domainKeyField = getAnnotatedField(target, FiroDomainKey.class);
-            Long refKey;
-            if (domainKeyField != null) {
-                refKey = (Long) PropertyUtils.getProperty(target, domainKeyField.getName());
-            } else {
-
-                refKey = (Long) PropertyUtils.getProperty(target, firoDomain.keyFieldName());
-            }
+            Long refKey = FiroUtil.getFiroDomainKey(target, firoDomain);
 
             // 현재 도메인 객체의 생성일시 값 얻기
-            Field domainDateField = getAnnotatedField(target, FiroDomainDate.class);
-            Object date;
-            try {
-                if (domainDateField != null) {
-                    date = PropertyUtils.getProperty(target, domainDateField.getName());
-                } else {
-                    date = PropertyUtils.getProperty(target, firoDomain.dateFieldName());
-                }
-            } catch (Throwable e) {
-                log.error(e.getMessage(), e);
-                date = LocalDateTime.now();
-            }
+            LocalDateTime date = FiroUtil.getFiroDomainDt(target, firoDomain);
 
-            if (date instanceof LocalDate) {
-                date = DateTools.convert((LocalDate) date, DateTools.ConvertTo.LOCAL_DATE_TIME);
-            }
-
-            firoService.save(refKey, attachContainer.get(firoDomain.value()), (LocalDateTime) date);
+            firoService.save(refKey, attachContainer.get(firoDomain.value()), date);
             index++;
         }
     }
@@ -182,15 +157,6 @@ public class FiroUploadAspect {
                 }
             }
         }
-    }
-
-    private Field getAnnotatedField(Object obj, Class annotationClass) {
-        for(Field field  : obj.getClass().getDeclaredFields()) {
-            if (field.isAnnotationPresent(annotationClass)) {
-                return field;
-            }
-        }
-        return null;
     }
 
 }

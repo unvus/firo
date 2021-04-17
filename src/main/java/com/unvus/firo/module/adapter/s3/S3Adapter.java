@@ -6,11 +6,9 @@ import com.amazonaws.auth.BasicAWSCredentials;
 import com.amazonaws.auth.BasicSessionCredentials;
 import com.amazonaws.auth.profile.ProfileCredentialsProvider;
 import com.amazonaws.regions.Regions;
+import com.amazonaws.services.s3.AmazonS3;
 import com.amazonaws.services.s3.AmazonS3ClientBuilder;
-import com.amazonaws.services.s3.model.CopyObjectRequest;
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.model.ObjectMetadata;
-import com.amazonaws.services.s3.model.PutObjectRequest;
+import com.amazonaws.services.s3.model.*;
 import com.amazonaws.services.s3.transfer.Download;
 import com.amazonaws.services.s3.transfer.TransferManager;
 import com.amazonaws.services.s3.transfer.TransferManagerBuilder;
@@ -33,6 +31,7 @@ import java.io.File;
 import java.io.InputStream;
 import java.nio.file.Path;
 import java.nio.file.Paths;
+import java.util.List;
 
 @Slf4j
 public class S3Adapter implements Adapter {
@@ -73,6 +72,7 @@ public class S3Adapter implements Adapter {
         metadata.setContentLength(size);
         Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
         PutObjectRequest request = new PutObjectRequest(props.getBucket(), fullPath.toString(), in, metadata);
+//        request.setCannedAcl(CannedAccessControlList.PublicRead);
         Upload upload = tm.upload(request);
 
         upload.waitForCompletion();
@@ -85,8 +85,10 @@ public class S3Adapter implements Adapter {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(size);
         metadata.setContentType(contentType);
+
         Path fullPath = Paths.get(fullDir, path);
         PutObjectRequest request = new PutObjectRequest(props.getBucket(), fullPath.toString(), in, metadata);
+//        request.setCannedAcl(CannedAccessControlList.PublicRead);
         Upload upload = tm.upload(request);
 
         upload.waitForCompletion();
@@ -143,6 +145,20 @@ public class S3Adapter implements Adapter {
                 new AWSStaticCredentialsProvider(new BasicAWSCredentials(props.getAccessKey(), props.getSecretKey()))
             );
         }
+
+//        AmazonS3 s3 = clientBuilder.build();
+//        ListObjectsV2Result result = s3.listObjectsV2(props.getBucket());
+//        List<S3ObjectSummary> objects = result.getObjectSummaries();
+//        for (S3ObjectSummary os : objects) {
+//            System.out.println("* " + os.getKey());
+//            System.out.println("* " + os.getSize());
+//        }
+//        AccessControlList acl = s3.getBucketAcl(props.getBucket());
+//        List<Grant> grants = acl.getGrantsAsList();
+//        for (Grant grant : grants) {
+//            System.out.format("  %s: %s\n", grant.getGrantee().getIdentifier(),
+//                grant.getPermission().toString());
+//        }
 
         TransferManager transferManager = TransferManagerBuilder.standard()
             .withS3Client(

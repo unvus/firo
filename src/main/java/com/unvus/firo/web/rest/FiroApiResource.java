@@ -11,7 +11,9 @@ import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.FiroService;
 import com.unvus.firo.module.service.domain.FiroDomain;
+import com.unvus.firo.util.FiroUtil;
 import com.unvus.util.FieldMap;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -216,6 +218,12 @@ public class FiroApiResource {
             );
     }
 
+    @PostMapping(value = "/direct-url",
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<String> getAttach(@RequestBody DirectUrlParam param) throws Exception {
+
+        return new ResponseEntity<>(FiroUtil.directUrl(param.getDomain(), param.getCategory(), param.getDomainId(), param.getCreatedDt(), param.getIndex()), HttpStatus.OK);
+    }
 
     private FiroFilterChain extractToFilterChain(Map<String, Map<String, Object>> filterMap) {
         FiroFilterChain filterChain = new FiroFilterChain();
@@ -241,6 +249,15 @@ public class FiroApiResource {
             }
         });
         return filterChain;
+    }
+
+    @Data
+    static class DirectUrlParam {
+        String domain;
+        String category;
+        String domainId;
+        LocalDateTime createdDt;
+        int index;
     }
 
 }
