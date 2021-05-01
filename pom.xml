@@ -12,18 +12,18 @@
 
     <groupId>com.unvus.firo</groupId>
     <artifactId>firo</artifactId>
-    <version>0.0.2-juvis-SNAPSHOT</version>
+    <version>0.0.2-SNAPSHOT</version>
     <packaging>jar</packaging>
     <name>firo</name>
 
     <distributionManagement>
         <snapshotRepository>
-            <id>wylie-snapshots</id>
-            <url>https://repo.wylie.co.kr/repository/maven-snapshots</url>
+            <id>unvus-snapshots</id>
+            <url>https://repo.unvus.com/repository/maven-snapshots</url>
         </snapshotRepository>
         <repository>
-            <id>wylie-releases</id>
-            <url>https://repo.wylie.co.kr/repository/maven-releases</url>
+            <id>unvus-releases</id>
+            <url>https://repo.unvus.com/repository/maven-releases</url>
         </repository>
     </distributionManagement>
 
@@ -48,8 +48,8 @@
 
     <repositories>
         <repository>
-            <id>wylie-public</id>
-            <url>https://repo.wylie.co.kr/repository/maven-public</url>
+            <id>unvus-public</id>
+            <url>https://repo.unvus.com/repository/maven-public</url>
             <releases>
                 <enabled>true</enabled>
             </releases>
@@ -62,8 +62,8 @@
 
     <pluginRepositories>
         <pluginRepository>
-            <id>wylie-public</id>
-            <url>https://repo.wylie.co.kr/repository/maven-public</url>
+            <id>unvus-public</id>
+            <url>https://repo.unvus.com/repository/maven-public</url>
         </pluginRepository>
     </pluginRepositories>
 
