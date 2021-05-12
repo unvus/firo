@@ -129,7 +129,7 @@ public class FiroCategory {
     }
 
     public void write(String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
-        adapter.write(fullDir, path, in, size, contentType);
+        adapter.write(this.directoryPathPolicy, fullDir, path, in, size, contentType);
     }
 
     public void rename(String from, String to) throws Exception {
