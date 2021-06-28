@@ -230,6 +230,9 @@ public class FiroService {
             FiroCategory category = FiroRegistry.get(domainCode, FiroRegistry._DEFAULT_CATEGORY_NAME);
             category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream(), upload.getSize(), upload.getContentType());
 
+            if(StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
+                return FiroRegistry.getDefaultDirectUrl() + category.getDirectoryPathPolicy().getSubDir() + fileName;
+            }
             return "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
         }
         return null;
