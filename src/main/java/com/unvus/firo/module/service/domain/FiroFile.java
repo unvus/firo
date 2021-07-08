@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "j4t_attach")
+@Table(name = "jst_attach", catalog = "JCMS")
 public class FiroFile {
 
     // Raw attributes
