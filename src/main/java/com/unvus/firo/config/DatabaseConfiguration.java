@@ -2,6 +2,7 @@ package com.unvus.firo.config;
 
 import com.unvus.firo.config.properties.DatabaseProperties;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -30,9 +31,12 @@ public class DatabaseConfiguration {
     private final Environment env;
     private final DatabaseProperties databaseProperties;
 
-    public DatabaseConfiguration(Environment env, DatabaseProperties databaseProperties) {
+    private final String dialect;
+
+    public DatabaseConfiguration(Environment env, DatabaseProperties databaseProperties, @Value("${firo.jpa.dialect:org.hibernate.dialect.H2Dialect}")String dialect) {
         this.env = env;
         this.databaseProperties = databaseProperties;
+        this.dialect = dialect;
     }
 
     @Bean
@@ -76,7 +80,7 @@ public class DatabaseConfiguration {
     final Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
         hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "none");
-        hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect"));
+        hibernateProperties.setProperty("hibernate.dialect", dialect);
         hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", "false");
         return hibernateProperties;
     }
