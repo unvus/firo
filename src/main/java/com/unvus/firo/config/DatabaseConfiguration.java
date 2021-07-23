@@ -31,9 +31,12 @@ public class DatabaseConfiguration {
     private final Environment env;
     private final DatabaseProperties databaseProperties;
 
-    public DatabaseConfiguration(Environment env, DatabaseProperties databaseProperties) {
+    private final String dialect;
+
+    public DatabaseConfiguration(Environment env, DatabaseProperties databaseProperties, @Value("${firo.jpa.dialect:org.hibernate.dialect.H2Dialect}")String dialect) {
         this.env = env;
         this.databaseProperties = databaseProperties;
+        this.dialect = dialect;
     }
 
     @Bean
@@ -76,8 +79,8 @@ public class DatabaseConfiguration {
 
     final Properties additionalProperties() {
         final Properties hibernateProperties = new Properties();
-        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", env.getProperty("spring.jpa.hibernate.ddl-auto", "none"));
-        hibernateProperties.setProperty("hibernate.dialect", env.getProperty("spring.jpa.properties.hibernate.dialect", "org.hibernate.dialect.H2Dialect"));
+        hibernateProperties.setProperty("hibernate.hbm2ddl.auto", "none");
+        hibernateProperties.setProperty("hibernate.dialect", env.getProperty("hibernate.dialect", "org.hibernate.dialect.H2Dialect"));
         hibernateProperties.setProperty("hibernate.cache.use_second_level_cache", "false");
         return hibernateProperties;
     }

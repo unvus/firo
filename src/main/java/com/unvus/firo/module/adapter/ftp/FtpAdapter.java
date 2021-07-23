@@ -34,21 +34,24 @@ public class FtpAdapter implements Adapter {
 
     @Override
     public File read(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-        return read(directoryPathPolicy.getBaseDir(), path);
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getBaseDir(), path), directoryPathPolicy.getSeparator());
+        return read(fullPath);
     }
 
 
     @Override
     public File readTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-        return read(directoryPathPolicy.getTempDir(), path);
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
+
+        return read(fullPath);
     }
 
-    private File read(String dir, String path) throws Exception {
+    private File read(String fullPath) throws Exception {
         AtomicReference<File> tempFile = new AtomicReference<>(File.createTempFile("ftp_read_", "_tmp"));
 
         template
             .execute(session -> {
-                session.read(Paths.get(dir, path).toString(), new FileOutputStream(tempFile.get()));
+                session.read(fullPath, new FileOutputStream(tempFile.get()));
 
                 return null;
             });
@@ -57,11 +60,12 @@ public class FtpAdapter implements Adapter {
 
     @Override
     public File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream in, long size, String contentType) throws Exception {
-        Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
+
         template
             .execute(session -> {
                 createDirectoryIfNotExists(session, directoryPathPolicy.getTempDir());
-                session.write(in, fullPath.toString());
+                session.write(in, fullPath);
 
                 return null;
             });
@@ -70,12 +74,13 @@ public class FtpAdapter implements Adapter {
     }
 
     @Override
-    public void write(String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
-        Path fullPath = Paths.get(fullDir, path);
+    public void write(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
+        String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
+
         template
             .execute(session -> {
                 createDirectoryIfNotExists(session, fullDir);
-                session.write(in, fullPath.toString());
+                session.write(in, fullPath);
 
                 return null;
             });
@@ -92,20 +97,20 @@ public class FtpAdapter implements Adapter {
 
     @Override
     public void delete(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getBaseDir(), path), directoryPathPolicy.getSeparator());
         template
             .execute(session -> {
-                Path fullPath = Paths.get(directoryPathPolicy.getBaseDir(), path);
-                session.remove(fullPath.toString());
+                session.remove(fullPath);
                 return null;
             });
     }
 
     @Override
     public void deleteTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
         template
             .execute(session -> {
-                Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
-                session.remove(fullPath.toString());
+                session.remove(fullPath);
                 return null;
             });
     }
@@ -126,4 +131,5 @@ public class FtpAdapter implements Adapter {
     public boolean supports(AdapterType adapterType) {
         return AdapterType.FTP == adapterType;
     }
+
 }

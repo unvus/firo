@@ -29,6 +29,8 @@ import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
 
+import static com.unvus.firo.web.rest.FiroCkEditorResource.DOMAIN_CODE;
+
 @Slf4j
 @Service
 public class FiroService {
@@ -230,6 +232,9 @@ public class FiroService {
             FiroCategory category = FiroRegistry.get(domainCode, FiroRegistry._DEFAULT_CATEGORY_NAME);
             category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream(), upload.getSize(), upload.getContentType());
 
+            if(StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
+                return FiroRegistry.getDefaultDirectUrl() + DOMAIN_CODE + "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
+            }
             return "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
         }
         return null;

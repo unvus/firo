@@ -55,6 +55,9 @@ public class FiroCkEditorResource {
         resultMap.put("fileName", "");
         resultMap.put("uploaded", 1);
         resultMap.put("url", CK_IMG_URL + filename);
+        if(StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
+            resultMap.put("url", filename);
+        }
 
         return new ResponseEntity<>(resultMap, HttpStatus.OK);
 
@@ -69,7 +72,11 @@ public class FiroCkEditorResource {
 
         // dialog
         response.setContentType("text/html;charset=UTF-8");
-        return String.format(CKEDITOR_RESULT, request.getParameter("CKEditorFuncNum"), CK_IMG_URL + filename);
+        if(StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
+            return String.format(CKEDITOR_RESULT, request.getParameter("CKEditorFuncNum"), filename);
+        }else {
+            return String.format(CKEDITOR_RESULT, request.getParameter("CKEditorFuncNum"), CK_IMG_URL + filename);
+        }
 
     }
 

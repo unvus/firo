@@ -46,17 +46,19 @@ public class S3Adapter implements Adapter {
 
     @Override
     public File read(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-        return read(directoryPathPolicy.getBaseDir(), path);
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getBaseDir(), path), directoryPathPolicy.getSeparator());
+        return read(fullPath);
     }
 
 
     @Override
     public File readTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-        return read(directoryPathPolicy.getTempDir(), path);
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
+        return read(fullPath);
     }
 
-    private File read(String dir, String path) throws Exception {
-        GetObjectRequest request = new GetObjectRequest(props.getBucket(), Paths.get(dir, path).toString());
+    private File read(String fullPath) throws Exception {
+        GetObjectRequest request = new GetObjectRequest(props.getBucket(), fullPath);
         File tempFile = File.createTempFile("s3_read_", "_tmp");
 
         Download download = tm.download(request, tempFile);
@@ -70,8 +72,9 @@ public class S3Adapter implements Adapter {
     public File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream in, long size, String contentType) throws Exception {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(size);
-        Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
-        PutObjectRequest request = new PutObjectRequest(props.getBucket(), fullPath.toString(), in, metadata);
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
+//        Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
+        PutObjectRequest request = new PutObjectRequest(props.getBucket(), fullPath, in, metadata);
 //        request.setCannedAcl(CannedAccessControlList.PublicRead);
         Upload upload = tm.upload(request);
 
@@ -81,13 +84,14 @@ public class S3Adapter implements Adapter {
     }
 
     @Override
-    public void write(String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
+    public void write(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
         ObjectMetadata metadata = new ObjectMetadata();
         metadata.setContentLength(size);
         metadata.setContentType(contentType);
 
-        Path fullPath = Paths.get(fullDir, path);
-        PutObjectRequest request = new PutObjectRequest(props.getBucket(), fullPath.toString(), in, metadata);
+        String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
+
+        PutObjectRequest request = new PutObjectRequest(props.getBucket(), fullPath, in, metadata);
 //        request.setCannedAcl(CannedAccessControlList.PublicRead);
         Upload upload = tm.upload(request);
 
@@ -103,14 +107,15 @@ public class S3Adapter implements Adapter {
 
     @Override
     public void delete(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-        Path fullPath = Paths.get(directoryPathPolicy.getBaseDir(), path);
-        tm.getAmazonS3Client().deleteObject(props.getBucket(), fullPath.toString());
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getBaseDir(), path), directoryPathPolicy.getSeparator());
+
+        tm.getAmazonS3Client().deleteObject(props.getBucket(), fullPath);
     }
 
     @Override
     public void deleteTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-        Path fullPath = Paths.get(directoryPathPolicy.getTempDir(), path);
-        tm.getAmazonS3Client().deleteObject(props.getBucket(), fullPath.toString());
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
+        tm.getAmazonS3Client().deleteObject(props.getBucket(), fullPath);
     }
 
     @Override

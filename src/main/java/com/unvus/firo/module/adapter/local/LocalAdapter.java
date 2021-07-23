@@ -42,7 +42,7 @@ public class LocalAdapter implements Adapter {
     }
 
     @Override
-    public void write(String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
+    public void write(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
         createDirectoryIfNotExists(fullDir);
 
         Files.copy(in, Paths.get(fullDir, path));
