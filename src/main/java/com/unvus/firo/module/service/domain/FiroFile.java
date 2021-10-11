@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "file")
+@Table(name = "firo_file")
 public class FiroFile {
 
     // Raw attributes
@@ -59,7 +59,7 @@ public class FiroFile {
     /**
      * 파일 설명
      */
-    @Column(name = "desc", length = 4000)
+    @Column(name = "description", length = 4000)
     protected String description;
 
     /**
