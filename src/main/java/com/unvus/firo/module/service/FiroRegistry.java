@@ -5,8 +5,8 @@ import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.policy.impl.DateDirectoryPathPolicy;
-import com.unvus.firo.module.service.domain.FiroDomain;
 import com.unvus.firo.module.service.domain.FiroCategory;
+import com.unvus.firo.module.service.domain.FiroDomain;
 import com.unvus.firo.module.service.domain.SecureAccessFunc;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.plugin.core.PluginRegistry;
@@ -58,7 +58,7 @@ public class FiroRegistry {
         DirectoryPathPolicy directoryPathPolicy = null;
         if (adapterType == AdapterType.LOCAL) {
             directoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
-        }else if (adapterType == AdapterType.FTP) {
+        } else if (adapterType == AdapterType.FTP) {
             directoryPathPolicy = buildDirectoryPathPolicy(props.getFtp().getDirectory());
         } else if (adapterType == AdapterType.SFTP) {
             directoryPathPolicy = buildDirectoryPathPolicy(props.getSftp().getDirectory());
@@ -129,18 +129,18 @@ public class FiroRegistry {
 
     public static String getDirectUrl(String domainCode, String categoryCode) {
         String result = defaultDirectUrl;
-        if(StringUtils.isBlank(domainCode)) {
+        if (StringUtils.isBlank(domainCode)) {
             return result;
         }
 
         FiroDomain domain = get(domainCode);
-        if(domain != null) {
+        if (domain != null) {
             result = domain.getDirectUrl();
             if (StringUtils.isBlank(categoryCode)) {
                 return result;
             }
             FiroCategory category = domain.getCategory(categoryCode);
-            if(category != null) {
+            if (category != null) {
                 result = category.getDirectUrl();
             }
         }
@@ -174,7 +174,7 @@ public class FiroRegistry {
     public static FiroCategory get(String domainCode, String categoryCode) {
         FiroDomain firoDomain = FiroRegistry.get(domainCode);
         FiroCategory category = firoDomain.getCategory(categoryCode);
-        if(category == null) {
+        if (category == null) {
             category = FiroCategory.builder(firoDomain, categoryCode).build();
             firoDomain.addCategory(category);
         }
@@ -187,7 +187,7 @@ public class FiroRegistry {
     }
 
     public static FiroRegistry add(FiroDomain firoDomain) {
-        if(firoDomain.getAdapter() == null) {
+        if (firoDomain.getAdapter() == null) {
             firoDomain.setAdapter(getDefaultAdapter());
         }
 

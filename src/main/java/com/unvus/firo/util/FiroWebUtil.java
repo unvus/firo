@@ -1,9 +1,13 @@
 package com.unvus.firo.util;
 
+import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.AttachContainer;
+import com.unvus.firo.module.service.domain.FiroCategory;
+import com.unvus.util.DateTools;
 import com.unvus.util.FieldMap;
 import com.unvus.util.JsonUtil;
+import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.lang3.StringUtils;
 import org.apache.tika.io.IOUtils;
 import org.springframework.web.context.request.RequestContextHolder;
@@ -20,11 +24,15 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 import java.util.*;
 
 public class FiroWebUtil {
@@ -37,23 +45,24 @@ public class FiroWebUtil {
     public static boolean needFreshResponse(HttpServletRequest request, SimpleDateFormat dateFormat) {
         boolean needFresh = true;
         String modifiedSince = request.getHeader("if-modified-since");
-        if(modifiedSince == null) {
+        if (modifiedSince == null) {
             Enumeration<String> sinceHeaders = request.getHeaders("if-modified-since");
-            if(sinceHeaders.hasMoreElements()) {
+            if (sinceHeaders.hasMoreElements()) {
                 modifiedSince = sinceHeaders.nextElement();
             }
         }
 
-        if(modifiedSince != null) {
+        if (modifiedSince != null) {
             try {
                 Date lastAccess = dateFormat.parse(modifiedSince);
 
                 Calendar cal = Calendar.getInstance(TimeZone.getTimeZone("GMT"));
                 cal.add(CACHE_PERIOD_UNIT, CACHE_PERIOD_VALUE * -1);
-                if(cal.getTime().compareTo(lastAccess) < 0) {
+                if (cal.getTime().compareTo(lastAccess) < 0) {
                     needFresh = false;
                 }
-            } catch (Exception ignore) {}
+            } catch (Exception ignore) {
+            }
         }
 
         return needFresh;
@@ -68,7 +77,7 @@ public class FiroWebUtil {
 
         String maxAgeDirective = "max-age=" + (cal.getTimeInMillis() - System.currentTimeMillis()) / 1000L;
 
-        response.setHeader("Cache-Control",  maxAgeDirective);
+        response.setHeader("Cache-Control", maxAgeDirective);
         response.setHeader("Expires", dateFormat.format(cal.getTime()));
     }
 
@@ -100,15 +109,15 @@ public class FiroWebUtil {
         FileInputStream fin = null;
         FileChannel inputChannel = null;
         WritableByteChannel outputChannel = null;
-        try{
+        try {
             fin = new FileInputStream(f);
             inputChannel = fin.getChannel();
             outputChannel = Channels.newChannel(response.getOutputStream());
 
             inputChannel.transferTo(0, fin.available(), outputChannel);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw e;
-        }finally{
+        } finally {
             IOUtils.closeQuietly(fin);
             IOUtils.closeQuietly(inputChannel);
             IOUtils.closeQuietly(outputChannel);
@@ -117,13 +126,12 @@ public class FiroWebUtil {
 
 
     public static void writeFileWithWatermark(File f, BufferedImage watermarkImage, File output, String fileType) throws IOException {
-        try{
+        try {
             writeWatermarkImage(f, watermarkImage, output, fileType);
-        }catch(Exception e){
+        } catch (Exception e) {
             throw e;
         }
     }
-
 
 
     private static void writeWatermarkImage(File sourceImageFile, BufferedImage watermarkImage, File output, String fileType) throws IOException {
@@ -155,11 +163,11 @@ public class FiroWebUtil {
 
     public static HttpServletRequest extractRequest(Class<? extends HttpServletRequest> requestClass, ServletRequest request) {
 
-        if(requestClass.isInstance(request)) {
-            return (HttpServletRequest)request;
-        }else if(request instanceof HttpServletRequestWrapper) {
-            return extractRequest(requestClass, ((HttpServletRequestWrapper)request).getRequest());
-        }else {
+        if (requestClass.isInstance(request)) {
+            return (HttpServletRequest) request;
+        } else if (request instanceof HttpServletRequestWrapper) {
+            return extractRequest(requestClass, ((HttpServletRequestWrapper) request).getRequest());
+        } else {
             return null;
         }
 

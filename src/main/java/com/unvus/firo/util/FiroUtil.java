@@ -1,6 +1,5 @@
 package com.unvus.firo.util;
 
-import com.unvus.firo.annotation.FiroDomain;
 import com.unvus.firo.annotation.FiroDomainDate;
 import com.unvus.firo.annotation.FiroDomainKey;
 import com.unvus.firo.module.service.FiroRegistry;
@@ -10,11 +9,13 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 
 import java.lang.reflect.Field;
+import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
+import java.time.temporal.TemporalAccessor;
 
 @Slf4j
 public class FiroUtil {
@@ -29,8 +30,8 @@ public class FiroUtil {
         return null;
     }
 
-    public static FiroDomain getFiroDomain(Object obj) {
-        return obj.getClass().getAnnotation(FiroDomain.class);
+    public static com.unvus.firo.annotation.FiroDomain getFiroDomain(Object obj) {
+        return obj.getClass().getAnnotation(com.unvus.firo.annotation.FiroDomain.class);
     }
 
 
@@ -38,7 +39,7 @@ public class FiroUtil {
         return getFiroDomainKey(obj, getFiroDomain(obj));
     }
 
-    public static Long getFiroDomainKey(Object obj, FiroDomain firoDomain) throws Exception {
+    public static Long getFiroDomainKey(Object obj, com.unvus.firo.annotation.FiroDomain firoDomain) throws Exception {
         Field domainKeyField = FiroUtil.getAnnotatedField(obj, FiroDomainKey.class);
         Long refKey;
         if (domainKeyField != null) {
@@ -54,7 +55,7 @@ public class FiroUtil {
         return getFiroDomainDt(obj, getFiroDomain(obj));
     }
 
-    public static LocalDateTime getFiroDomainDt(Object obj, FiroDomain firoDomain) {
+    public static LocalDateTime getFiroDomainDt(Object obj, com.unvus.firo.annotation.FiroDomain firoDomain) {
         Field domainDateField = FiroUtil.getAnnotatedField(obj, FiroDomainDate.class);
         Object date;
         try {
@@ -79,13 +80,13 @@ public class FiroUtil {
     }
 
     public static String directUrl(Object obj, String category, int index) throws Exception {
-        FiroDomain firoDomain = FiroUtil.getFiroDomain(obj);
+        com.unvus.firo.annotation.FiroDomain firoDomain = FiroUtil.getFiroDomain(obj);
         return directUrl(obj, category, FiroUtil.getFiroDomainKey(obj, firoDomain).toString(), FiroUtil.getFiroDomainDt(obj, firoDomain), index, null);
     }
 
     public static String directUrl(Object obj, String category, String domainId, LocalDateTime createdDt, Integer index, Object cacheValue) throws Exception {
 
-        FiroDomain firoDomain = FiroUtil.getFiroDomain(obj);
+        com.unvus.firo.annotation.FiroDomain firoDomain = FiroUtil.getFiroDomain(obj);
         String domain = firoDomain.value();
 
         FiroCategory firoCategory = FiroRegistry.get(domain, category);

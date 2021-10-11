@@ -2,15 +2,15 @@ package com.unvus.firo.module.service;
 
 import com.unvus.firo.annotation.FiroDomain;
 import com.unvus.firo.annotation.FiroDomainKey;
+import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
-import com.unvus.firo.module.filter.FiroFilterChain;
-import com.unvus.firo.util.SecureNameUtil;
-import com.unvus.firo.web.rest.FiroCkEditorResource;
 import com.unvus.firo.module.service.domain.FiroCategory;
+import com.unvus.firo.module.filter.FiroFilterChain;
 import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.repository.FiroRepository;
+import com.unvus.firo.util.SecureNameUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 import org.apache.commons.collections4.CollectionUtils;
@@ -28,6 +28,8 @@ import java.nio.file.InvalidPathException;
 import java.nio.file.Paths;
 import java.time.LocalDateTime;
 import java.util.*;
+
+import static com.unvus.firo.web.rest.FiroCkEditorResource.DOMAIN_CODE;
 
 @Slf4j
 @Service
@@ -57,8 +59,8 @@ public class FiroService {
      *     <li>form submit 시 uuid 전송</li>
      * </ol>
      *
-     * @param file  첨부파일 객체
-     * @param category <code>ReferenceTypeRegistry</code> 으로 부터 얻은 firoCategory 객체
+     * @param file        첨부파일 객체
+     * @param category    <code>ReferenceTypeRegistry</code> 으로 부터 얻은 firoCategory 객체
      * @param filterChain 적용할 filterChain. 없으면 최초 설정(attach.yml)에 저장된 filterChain 사용
      * @return uuid
      * @throws Exception
@@ -76,26 +78,26 @@ public class FiroService {
                 File temp = adapter.writeTemp(FiroRegistry.getLocalDirectoryPathPolicy(), uuid, is, file.getSize(), file.getContentType());
 
                 try {
-                    if(filterChain == null || filterChain.size() == 0) {
+                    if (filterChain == null || filterChain.size() == 0) {
                         if (category.getFilterChain() != null && category.getFilterChain().size() > 0) {
                             category.getFilterChain().startFilter(temp);
                         }
-                    }else {
+                    } else {
                         filterChain.startFilter(temp);
                     }
-                }catch(Exception e) {
+                } catch (Exception e) {
                     log.error(e.getMessage(), e);
                     throw new RuntimeException(e.getMessage());
                 }
 
-                if(!category.getAdapter().supports(AdapterType.LOCAL)) {
+                if (!category.getAdapter().supports(AdapterType.LOCAL)) {
                     category.writeTemp(uuid, new FileInputStream(temp), file.getSize(), file.getContentType());
                 }
 
                 return uuid;
-            } catch (IOException |RuntimeException e) {
+            } catch (IOException | RuntimeException e) {
                 throw new Exception("Failed to upload " + file.getOriginalFilename() + " => " + e.getMessage());
-            }finally {
+            } finally {
                 IOUtils.closeQuietly(is);
             }
         } else {
@@ -112,7 +114,7 @@ public class FiroService {
     public List<FiroFile> save(Long domainKey, AttachBag bag, LocalDateTime date, boolean cleanDomain) throws Exception {
         List<FiroFile> newAttachList = new ArrayList();
 
-        if(bag == null || bag.isEmpty()) {
+        if (bag == null || bag.isEmpty()) {
             return newAttachList;
         }
 
@@ -122,27 +124,27 @@ public class FiroService {
 
         // 삭제 우선 처리
         List<FiroFile> deleted = bag.get(DELETED_MAP_CODE);
-        if(deleted != null) {
+        if (deleted != null) {
             deleteAttachPermanently(deleted);
             bag.remove(DELETED_MAP_CODE);
         }
 
-        for(Map.Entry<String, List<FiroFile>> entry: bag.entrySet()) {
+        for (Map.Entry<String, List<FiroFile>> entry : bag.entrySet()) {
 
             String categoryCode = entry.getKey();
             FiroCategory category = FiroRegistry.get(bag.getDomainCode(), categoryCode);
 
             String baseDir = category.getDirectoryPathPolicy().getBaseDir();
 
-            if(entry.getValue() == null ) {
+            if (entry.getValue() == null) {
                 continue;
             }
 
             int index = 0;
-            for(FiroFile attach : entry.getValue()) {
+            for (FiroFile attach : entry.getValue()) {
                 try {
                     if (attach.getId() != null) {
-                        if(!attach.getSavedName().startsWith(categoryCode + "_" + index + "_")) {
+                        if (!attach.getSavedName().startsWith(categoryCode + "_" + index + "_")) {
                             // 이미 저장된 파일이지만 index(순서) 가 변경된 경우, 파일 이름을 다시 생성해서 저장한다.
                             FiroFile firoFile = firoRepository.getOne(attach.getId());
                             String newFileName = SecureNameUtil.gen(category, firoFile.getId().toString(), index);
@@ -167,7 +169,7 @@ public class FiroService {
                         }
                         newAttachList.add(newAttach);
                     }
-                }catch (Exception e) {
+                } catch (Exception e) {
                     log.error(e.getMessage(), e);
                 }
 
@@ -215,13 +217,13 @@ public class FiroService {
 
     public String uploadEditorImage(MultipartFile upload, String domainCode) throws Exception {
 
-        if(upload != null && upload.getSize() != 0) {
+        if (upload != null && upload.getSize() != 0) {
 
             String orgName = upload.getOriginalFilename();
 
             String extension = StringUtils.substringAfterLast(orgName, ".");
 
-            if(StringUtils.isEmpty(extension)) {
+            if (StringUtils.isEmpty(extension)) {
                 extension = getFormatName(detectFile(upload.getInputStream()));
             }
 
@@ -230,8 +232,8 @@ public class FiroService {
             FiroCategory category = FiroRegistry.get(domainCode, FiroRegistry._DEFAULT_CATEGORY_NAME);
             category.write(category.getFullDir(LocalDateTime.now()), fileName, upload.getInputStream(), upload.getSize(), upload.getContentType());
 
-            if(StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
-                return FiroRegistry.getDefaultDirectUrl() + FiroCkEditorResource.DOMAIN_CODE + "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
+            if (StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
+                return FiroRegistry.getDefaultDirectUrl() + DOMAIN_CODE + "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
             }
             return "/" + category.getDirectoryPathPolicy().getSubDir() + fileName;
         }
@@ -240,7 +242,7 @@ public class FiroService {
 
     public void deleteAttach(List<FiroFile> attaches) throws Exception {
         deleteAttachPermanently(attaches);
-        if(CollectionUtils.isNotEmpty(attaches)) {
+        if (CollectionUtils.isNotEmpty(attaches)) {
             FiroFile attach = attaches.get(0);
         }
     }
@@ -253,19 +255,19 @@ public class FiroService {
 
 
     private void deleteAttachPermanently(List<FiroFile> attaches) throws Exception {
-        for(FiroFile attach : attaches) {
+        for (FiroFile attach : attaches) {
             FiroFile savedFiroFile = firoRepository.getOne(attach.getId());
-            if(savedFiroFile != null) {
-                if(StringUtils.isNoneBlank(savedFiroFile.getSavedDir()) && StringUtils.isNoneBlank(savedFiroFile.getSavedName())) {
+            if (savedFiroFile != null) {
+                if (StringUtils.isNoneBlank(savedFiroFile.getSavedDir()) && StringUtils.isNoneBlank(savedFiroFile.getSavedName())) {
                     FiroCategory category = FiroRegistry.get(savedFiroFile.getRefTarget(), savedFiroFile.getRefTargetType());
                     try {
                         category.delete(savedFiroFile.getSavedDir() + savedFiroFile.getSavedName());
-                    }catch(Exception e) {
+                    } catch (Exception e) {
                         log.error(e.getMessage(), e);
                     }
 
                     firoRepository.delete(attach);
-                }else {
+                } else {
                     throw new InvalidPathException("", "No path specified");
                 }
             }
@@ -274,7 +276,8 @@ public class FiroService {
 
 
     /**
-     *  상세 조회
+     * 상세 조회
+     *
      * @param id
      * @return Attach
      */
@@ -284,7 +287,8 @@ public class FiroService {
     }
 
     /**
-     *  목록 조회
+     * 목록 조회
+     *
      * @param param
      * @return
      */
@@ -317,6 +321,7 @@ public class FiroService {
 
         return list;
     }
+
     public List<FiroFile> listAttachByRef(String refTarget, Long refTargetKey, String refTargetType, String ext) {
         return listAttachByRef(refTarget, refTargetKey, refTargetType, ext, null);
     }
@@ -326,21 +331,21 @@ public class FiroService {
     }
 
     public AttachBag getAttachBagByRef(String refTarget, Long refTargetKey, String refTargetType, Map<String, Object> param) {
-        if(param == null) {
+        if (param == null) {
             param = new HashMap<>();
         }
         param.put("refTarget", refTarget);
         param.put("refTargetKey", refTargetKey);
-        if(StringUtils.isNotBlank(refTargetType)) {
+        if (StringUtils.isNotBlank(refTargetType)) {
             param.put("refTargetType", refTargetType);
         }
         List<FiroFile> list = firoRepository.listAttach(param);
 
         AttachBag bag = new AttachBag(refTarget);
 
-        if(CollectionUtils.isNotEmpty(list)) {
-            for(FiroFile attach : list) {
-                if(!bag.containsKey(attach.getRefTargetType())) {
+        if (CollectionUtils.isNotEmpty(list)) {
+            for (FiroFile attach : list) {
+                if (!bag.containsKey(attach.getRefTargetType())) {
                     bag.put(attach.getRefTargetType(), new ArrayList<>());
                 }
                 bag.get(attach.getRefTargetType()).add(attach);
@@ -356,12 +361,12 @@ public class FiroService {
 
         Map<Long, AttachBag> result = new HashMap<>();
 
-        for(FiroFile attach : list) {
-            if(!result.containsKey(attach.getRefTargetKey())) {
+        for (FiroFile attach : list) {
+            if (!result.containsKey(attach.getRefTargetKey())) {
                 result.put(attach.getRefTargetKey(), new AttachBag(refTarget));
             }
             AttachBag bag = result.get(attach.getRefTargetKey());
-            if(!bag.containsKey(attach.getRefTargetType())) {
+            if (!bag.containsKey(attach.getRefTargetType())) {
                 bag.put(attach.getRefTargetType(), new ArrayList<>());
             }
             bag.get(attach.getRefTargetType()).add(attach);
@@ -377,9 +382,9 @@ public class FiroService {
         // 현재 도메인 객체의 PK 값 얻기
         Field domainKeyField = getAnnotatedField(tClass, FiroDomainKey.class);
         final String keyFieldName;
-        if(domainKeyField != null) {
+        if (domainKeyField != null) {
             keyFieldName = domainKeyField.getName();
-        }else {
+        } else {
             keyFieldName = firoDomain.keyFieldName();
         }
 
@@ -387,26 +392,25 @@ public class FiroService {
     }
 
 
-
     public <T> List<T> injectAttachBag(List<T> list, String domain, String keyFieldName) throws Exception {
-        if(CollectionUtils.isEmpty(list)) {
+        if (CollectionUtils.isEmpty(list)) {
             return list;
         }
 
         Map<Long, T> tmap = new HashMap<>();
-        for(T t : list) {
-            tmap.put((Long)PropertyUtils.getProperty(t, keyFieldName), t);
+        for (T t : list) {
+            tmap.put((Long) PropertyUtils.getProperty(t, keyFieldName), t);
         }
 
         List<FiroFile> firoFileList = firoRepository.listAttachByIds(domain, null, tmap.keySet());
-        for(FiroFile attach: firoFileList) {
+        for (FiroFile attach : firoFileList) {
             T t = tmap.get(attach.getRefTargetKey());
-            Map meta = (Map)PropertyUtils.getProperty(t, "_meta");
-            if(!meta.containsKey("attachBag")) {
+            Map meta = (Map) PropertyUtils.getProperty(t, "_meta");
+            if (!meta.containsKey("attachBag")) {
                 meta.put("attachBag", new AttachBag(domain));
             }
-            AttachBag bag = (AttachBag)meta.get("attachBag");
-            if(!bag.containsKey(attach.getRefTargetType())) {
+            AttachBag bag = (AttachBag) meta.get("attachBag");
+            if (!bag.containsKey(attach.getRefTargetType())) {
                 bag.put(attach.getRefTargetType(), new ArrayList<>());
             }
             bag.get(attach.getRefTargetType()).add(attach);
@@ -429,7 +433,7 @@ public class FiroService {
         String extension = FilenameUtils.getExtension(tmpFile.getName());
         String baseName = FilenameUtils.getBaseName(tmpFile.getName());
         String uniqueName = baseName + "_" + count++ + "_." + extension;
-        while(tmpFile.exists()) {
+        while (tmpFile.exists()) {
             tmpFile = new File(parentDir, uniqueName);
         }
         return uniqueName;
@@ -437,6 +441,7 @@ public class FiroService {
 
     /**
      * 이미지 구분
+     *
      * @param stream
      * @return
      * @throws Exception
@@ -448,46 +453,50 @@ public class FiroService {
             synchronized (tika) {
                 contentType = tika.detect(stream);
             }
-        }catch (Exception ignore){}
+        } catch (Exception ignore) {
+        }
         return contentType;
     }
 
     /**
      * 이미지 구분
+     *
      * @param filename
      * @return
      * @throws Exception
      */
-    public static String detectFile(String filename)  {
+    public static String detectFile(String filename) {
 
         String contentType = null;
         try {
             synchronized (tika) {
                 contentType = tika.detect(filename);
             }
-        }catch (Exception ignore){}
+        } catch (Exception ignore) {
+        }
         return contentType;
     }
 
-    public static String detectFile(File file)  {
+    public static String detectFile(File file) {
 
         String contentType = null;
         try {
             synchronized (tika) {
                 contentType = tika.detect(file);
             }
-        }catch (Exception ignore){}
+        } catch (Exception ignore) {
+        }
         return contentType;
     }
 
     private String getFormatName(String contentType) {
-        if(StringUtils.indexOf(contentType, "jpeg") >= 0) {
+        if (StringUtils.indexOf(contentType, "jpeg") >= 0) {
             return "jpg";
-        }else if(StringUtils.indexOf(contentType, "jpg") >= 0) {
+        } else if (StringUtils.indexOf(contentType, "jpg") >= 0) {
             return "jpg";
-        }else if(StringUtils.indexOf(contentType, "gif") >= 0) {
+        } else if (StringUtils.indexOf(contentType, "gif") >= 0) {
             return "gif";
-        }else if(StringUtils.indexOf(contentType, "png") >= 0) {
+        } else if (StringUtils.indexOf(contentType, "png") >= 0) {
             return "png";
         }
         return "jpg";
@@ -499,7 +508,7 @@ public class FiroService {
 //    }
 
     private Field getAnnotatedField(Object obj, Class annotationClass) {
-        for(Field field  : obj.getClass().getDeclaredFields()) {
+        for (Field field : obj.getClass().getDeclaredFields()) {
             if (field.isAnnotationPresent(annotationClass)) {
                 return field;
             }
@@ -508,7 +517,7 @@ public class FiroService {
     }
 
     private Field getAnnotatedField(Class klass, Class annotationClass) {
-        for(Field field  : klass.getDeclaredFields()) {
+        for (Field field : klass.getDeclaredFields()) {
             if (field.isAnnotationPresent(annotationClass)) {
                 return field;
             }

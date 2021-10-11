@@ -1,9 +1,9 @@
 package com.unvus.firo.annotation;
 
-import com.unvus.firo.util.FiroUtil;
-import com.unvus.firo.util.FiroWebUtil;
 import com.unvus.firo.module.service.domain.AttachContainer;
 import com.unvus.firo.module.service.FiroService;
+import com.unvus.firo.util.FiroUtil;
+import com.unvus.firo.util.FiroWebUtil;
 import com.unvus.util.FieldMap;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -29,7 +29,7 @@ public class FiroUploadAspect {
 
     private final FiroService firoService;
 
-    @Around("execution(public * *(.., @com.unvus.firo.annotation.FiroUpload (*), ..)) && args(domain, ..)")
+    @Around("execution(public * *(.., @FiroUpload (*), ..)) && args(domain, ..)")
     public Object pointcut(ProceedingJoinPoint joinPoint, Object domain) throws Throwable {
         FieldMap bodyMap = FiroWebUtil.getRequestBodyMap();
         Object result = joinPoint.proceed();
@@ -58,14 +58,14 @@ public class FiroUploadAspect {
             // 메소드 파라미터 중 파라미터 레벨에 FiroDomain 어노테이션이 선언되어 있는 파라미터 구하기
             int idx = 0;
             FiroDomain parameterAnnotation = null;
-            for(Annotation[] methodAnnotations : method.getParameterAnnotations()) {
-                for(Annotation methodAnnotation : methodAnnotations) {
-                    if(methodAnnotation.annotationType().equals(FiroDomain.class)) {
-                        parameterAnnotation = (FiroDomain)methodAnnotation;
+            for (Annotation[] methodAnnotations : method.getParameterAnnotations()) {
+                for (Annotation methodAnnotation : methodAnnotations) {
+                    if (methodAnnotation.annotationType().equals(FiroDomain.class)) {
+                        parameterAnnotation = (FiroDomain) methodAnnotation;
                         break;
                     }
                 }
-                if(parameterAnnotation != null) {
+                if (parameterAnnotation != null) {
                     break;
                 }
                 idx++;
@@ -73,14 +73,14 @@ public class FiroUploadAspect {
 
             Map<Object, AttachContainer> targetMap = new HashMap<>();
 
-            if(parameterAnnotation != null) {
+            if (parameterAnnotation != null) {
                 targetMap.put(args[idx], FiroWebUtil.getAttachContainer(bodyMap));
                 extractFiroDomainObject(args[idx], targetMap, bodyMap);
                 upload(targetMap, parameterAnnotation);
-            }else {
+            } else {
                 // 메소드 파라미터 중 클래스 레벨에 FiroDomain 어노테이션이 선언되어 있는 파라미터 구하기
-                for(Object arg: args) {
-                    if(arg.getClass().isAnnotationPresent(FiroDomain.class)) {
+                for (Object arg : args) {
+                    if (arg.getClass().isAnnotationPresent(FiroDomain.class)) {
                         extractFiroDomainObject(arg, targetMap, bodyMap);
                     }
                 }
@@ -128,11 +128,11 @@ public class FiroUploadAspect {
             // source 가 배열이면 iterate 돌면서 재귀호출
             int idx = 0;
             for (Object item : (Collection<?>) source) {
-                extractFiroDomainObject(item, targetMap, ((List<?>)bodyMap).get(idx++));
+                extractFiroDomainObject(item, targetMap, ((List<?>) bodyMap).get(idx++));
             }
         } else if (source.getClass().isAnnotationPresent(FiroDomain.class)) {
             // source 개체에 FiroDomain 이 선언되어 있으면 대상에 추가
-            if(!targetMap.containsKey(source)) {
+            if (!targetMap.containsKey(source)) {
                 targetMap.put(source, FiroWebUtil.getAttachContainer((Map) bodyMap));
             }
 

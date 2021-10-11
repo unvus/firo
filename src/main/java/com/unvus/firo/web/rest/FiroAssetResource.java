@@ -2,13 +2,13 @@ package com.unvus.firo.web.rest;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.imageresize4j.ImageResizeProcessor;
-import com.unvus.firo.util.FiroWebUtil;
-import com.unvus.firo.util.ImageResizeUtil;
 import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.FiroService;
+import com.unvus.firo.util.FiroWebUtil;
+import com.unvus.firo.util.ImageResizeUtil;
 import com.unvus.util.LfuCache;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
@@ -46,7 +46,6 @@ public class FiroAssetResource {
     }
 
 
-
     @GetMapping(value = {
         "/attach/{action:view|download}/{id}"  /** Action Log 안 남길때(assets URL은 sso filter 실행 안됨 **/
 //                , "/attach/{action:view|download}/{id}" /** Action Log를 남길때 **/
@@ -54,8 +53,8 @@ public class FiroAssetResource {
     )
     public void view(@PathVariable("action") String action,
                      @PathVariable("id") Long id,
-                     @RequestParam(value="w", required = false) Integer width,
-                     @RequestParam(value="h", required = false) Integer height,
+                     @RequestParam(value = "w", required = false) Integer width,
+                     @RequestParam(value = "h", required = false) Integer height,
                      HttpServletRequest request,
                      HttpServletResponse response) throws Exception {
 
@@ -88,7 +87,7 @@ public class FiroAssetResource {
         File tf = convertScaledImage(category, width, height, attach, f, contentType);
 
         File result = tf;
-        if(tf == null) {
+        if (tf == null) {
             result = f;
         }
 
@@ -100,8 +99,8 @@ public class FiroAssetResource {
                          @PathVariable("domainCode") String domainCode,
                          @PathVariable("categoryCode") String categoryCode,
                          @PathVariable("id") String id,
-                         @RequestParam(value="w", required = false) Integer width,
-                         @RequestParam(value="h", required = false) Integer height,
+                         @RequestParam(value = "w", required = false) Integer width,
+                         @RequestParam(value = "h", required = false) Integer height,
                          HttpServletRequest request,
                          HttpServletResponse response) throws Exception {
 
@@ -126,9 +125,9 @@ public class FiroAssetResource {
 
         File tf = convertScaledImage(category, width, height, null, f, contentType);
 
-        if(tf == null) {
+        if (tf == null) {
             FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), f, contentType);
-        }else {
+        } else {
             FiroWebUtil.writeFileToClient(response, isDownload, dateFormat, id + StringUtils.substringAfter(contentType, "/"), tf, contentType);
         }
 
@@ -152,11 +151,11 @@ public class FiroAssetResource {
         @PathVariable("refType") String refType,
         @PathVariable("refKey") Long refKey,
         @PathVariable("mapCode") String mapCode,
-        @RequestParam(value="extAlt", required = false) String extAlt,
-        @RequestParam(value="ext", required = false) String ext,
-        @RequestParam(value="fmetaValue", required = false) String fmetaValue,
-        @RequestParam(value="w", required = false) Integer width,
-        @RequestParam(value="h", required = false) Integer height,
+        @RequestParam(value = "extAlt", required = false) String extAlt,
+        @RequestParam(value = "ext", required = false) String ext,
+        @RequestParam(value = "fmetaValue", required = false) String fmetaValue,
+        @RequestParam(value = "w", required = false) Integer width,
+        @RequestParam(value = "h", required = false) Integer height,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
@@ -185,11 +184,11 @@ public class FiroAssetResource {
         @PathVariable("refKey") Long refKey,
         @PathVariable("mapCode") String mapCode,
         @PathVariable("idx") Integer idx,
-        @RequestParam(value="extAlt", required = false) String extAlt,
-        @RequestParam(value="ext", required = false) String ext,
-        @RequestParam(value="fmetaValue", required = false) String fmetaValue,
-        @RequestParam(value="w", required = false) Integer width,
-        @RequestParam(value="h", required = false) Integer height,
+        @RequestParam(value = "extAlt", required = false) String extAlt,
+        @RequestParam(value = "ext", required = false) String ext,
+        @RequestParam(value = "fmetaValue", required = false) String fmetaValue,
+        @RequestParam(value = "w", required = false) Integer width,
+        @RequestParam(value = "h", required = false) Integer height,
         HttpServletRequest request,
         HttpServletResponse response) throws Exception {
 
@@ -204,51 +203,51 @@ public class FiroAssetResource {
 
         List<String> altList = null;
 
-        if(StringUtils.isNotBlank(extAlt)) {
+        if (StringUtils.isNotBlank(extAlt)) {
             ext = null;
             altList = Arrays.asList(StringUtils.split(extAlt, ":"));
 
         }
 
-        List<FiroFile> attachList = firoService.listAttachByRef(refType, refKey, mapCode, StringUtils.isNotBlank(ext)?ext:null, fmetaValue);
+        List<FiroFile> attachList = firoService.listAttachByRef(refType, refKey, mapCode, StringUtils.isNotBlank(ext) ? ext : null, fmetaValue);
 
-        if(CollectionUtils.isEmpty(attachList)) {
+        if (CollectionUtils.isEmpty(attachList)) {
             return;
         }
 
         FiroFile attach = null;
 
-        if(altList != null) {
+        if (altList != null) {
             // search by alt list
 
-            for(String alt : altList) {
-                for(FiroFile att : attachList) {
-                    if(StringUtils.equals(alt, att.getExt())) {
+            for (String alt : altList) {
+                for (FiroFile att : attachList) {
+                    if (StringUtils.equals(alt, att.getExt())) {
                         attach = att;
                         break;
                     }
                 }
-                if(attach != null) {
+                if (attach != null) {
                     break;
                 }
             }
 
-            if(attach == null) {
+            if (attach == null) {
                 attach = attachList.get(0);
             }
-        }else if (attachList.size() > idx) {
+        } else if (attachList.size() > idx) {
             // search by index
 
             attach = attachList.get(idx);
         }
 
-        if(attach == null) {
+        if (attach == null) {
             return;
         }
 
         FiroCategory category = FiroRegistry.get(refType, mapCode);
 
-        if(category.getSecureAccessFunc() != null && !category.getSecureAccessFunc().accept(request, attach)) {
+        if (category.getSecureAccessFunc() != null && !category.getSecureAccessFunc().accept(request, attach)) {
             return;
         }
 
@@ -263,7 +262,7 @@ public class FiroAssetResource {
         File tf = convertScaledImage(category, width, height, attach, f, contentType);
 
         File result = tf;
-        if(tf == null) {
+        if (tf == null) {
             result = f;
         }
 
@@ -272,15 +271,15 @@ public class FiroAssetResource {
     }
 
     private File convertScaledImage(FiroCategory category, Integer width, Integer height, FiroFile attach, File f, String contentType) {
-        if(width == null) {
+        if (width == null) {
             width = 0;
         }
-        if(height == null) {
+        if (height == null) {
             height = 0;
         }
 
         File tf = null;
-        if(width > 0 || height > 0) {
+        if (width > 0 || height > 0) {
             boolean imageCreated = false;
 
             String fullPath = Paths.get(category.getDirectoryPathPolicy().getBaseDir(), attach.getSavedDir(), "scaled_" + attach.getId()).toString();
@@ -295,9 +294,10 @@ public class FiroAssetResource {
                 }
                 try {
                     tf = category.read(Paths.get(fullPath, scaledName).toString());
-                }catch (Exception ignore) {}
+                } catch (Exception ignore) {
+                }
 
-                if(tf != null) {
+                if (tf != null) {
                     return tf;
                 }
 
@@ -327,7 +327,7 @@ public class FiroAssetResource {
                 log.warn(ignore.getMessage(), ignore);
             }
 
-            if(!imageCreated && tf != null) {
+            if (!imageCreated && tf != null) {
                 tf.delete();
                 tf = null;
                 nullCache.put(attach.getId() + "_" + scaledName, true);

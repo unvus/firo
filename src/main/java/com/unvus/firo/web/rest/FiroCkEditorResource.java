@@ -1,9 +1,9 @@
 package com.unvus.firo.web.rest;
 
-import com.unvus.firo.util.FiroWebUtil;
 import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.service.FiroService;
+import com.unvus.firo.util.FiroWebUtil;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.http.HttpStatus;
@@ -43,10 +43,9 @@ public class FiroCkEditorResource {
     }
 
 
-
     @RequestMapping(
-        value="/api/firo/ckupload/dnd",
-        produces    = MediaType.APPLICATION_JSON_VALUE)
+        value = "/api/firo/ckupload/dnd",
+        produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Map<String, Object>> ckUploadDrop(MultipartFile upload, HttpServletRequest request, HttpServletResponse response) throws Exception {
         String filename = firoService.uploadEditorImage(upload, DOMAIN_CODE);
 
@@ -55,7 +54,7 @@ public class FiroCkEditorResource {
         resultMap.put("fileName", "");
         resultMap.put("uploaded", 1);
         resultMap.put("url", CK_IMG_URL + filename);
-        if(StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
+        if (StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
             resultMap.put("url", filename);
         }
 
@@ -72,9 +71,9 @@ public class FiroCkEditorResource {
 
         // dialog
         response.setContentType("text/html;charset=UTF-8");
-        if(StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
+        if (StringUtils.isNotBlank(FiroRegistry.getDefaultDirectUrl())) {
             return String.format(CKEDITOR_RESULT, request.getParameter("CKEditorFuncNum"), filename);
-        }else {
+        } else {
             return String.format(CKEDITOR_RESULT, request.getParameter("CKEditorFuncNum"), CK_IMG_URL + filename);
         }
 

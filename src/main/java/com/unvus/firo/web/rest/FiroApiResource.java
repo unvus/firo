@@ -2,7 +2,6 @@ package com.unvus.firo.web.rest;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.unvus.firo.util.FiroUtil;
 import com.unvus.firo.module.service.FiroFilterRegistry;
 import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.filter.FiroFilter;
@@ -12,6 +11,7 @@ import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.firo.module.service.FiroService;
 import com.unvus.firo.module.service.domain.FiroDomain;
+import com.unvus.firo.util.FiroUtil;
 import com.unvus.util.FieldMap;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -36,7 +36,7 @@ public class FiroApiResource {
     private final FiroService firoService;
 
     public FiroApiResource(ObjectMapper objectMapper, FiroService firoService) {
-        this.objectMapper     = objectMapper;
+        this.objectMapper = objectMapper;
         this.firoService = firoService;
     }
 
@@ -54,7 +54,7 @@ public class FiroApiResource {
 
         FieldMap domains = new FieldMap();
 
-        for(FiroDomain domain: firoDomainMap.values()) {
+        for (FiroDomain domain : firoDomainMap.values()) {
             FieldMap domainMap = new FieldMap();
             domainMap.put("code", domain.getCode());
             domainMap.put("directUrl", domain.getDirectUrl());
@@ -62,7 +62,7 @@ public class FiroApiResource {
 
             FieldMap firoCategoryMap = new FieldMap();
             domainMap.put("categoryMap", firoCategoryMap);
-            for(FiroCategory category : domain.getAllCategory().values()) {
+            for (FiroCategory category : domain.getAllCategory().values()) {
                 FieldMap categoryMap = new FieldMap();
                 categoryMap.put("code", category.getCode());
                 categoryMap.put("directUrl", category.getDirectUrl());
@@ -91,7 +91,8 @@ public class FiroApiResource {
 
         if (filters != null) {
             Map<String, Map<String, Object>> filterMap =
-                objectMapper.readValue(filters, new TypeReference<Map<String, Map<String, Object>>>() {});
+                objectMapper.readValue(filters, new TypeReference<Map<String, Map<String, Object>>>() {
+                });
 
             filterChain = extractToFilterChain(filterMap);
         }
@@ -128,7 +129,7 @@ public class FiroApiResource {
         @PathVariable("domainKey") Long refKey,
         @RequestBody AttachBag attachBag) throws Exception {
 
-        List<FiroFile>  attachList = firoService.save(refKey, attachBag, LocalDateTime.now());
+        List<FiroFile> attachList = firoService.save(refKey, attachBag, LocalDateTime.now());
 
 
         Map<String, Object> result = new HashMap<>();
@@ -137,9 +138,9 @@ public class FiroApiResource {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PostMapping(value="/attach",
-        produces= MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> remove(@RequestBody List<FiroFile> attaches) throws Exception{
+    @PostMapping(value = "/attach",
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> remove(@RequestBody List<FiroFile> attaches) throws Exception {
 
         firoService.deleteAttach(attaches);
 
@@ -148,11 +149,11 @@ public class FiroApiResource {
         return new ResponseEntity<>(result, HttpStatus.OK);
     }
 
-    @PutMapping(value="/attach/",
-        produces= MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Map<String, Object>> modify(@RequestBody List<FiroFile> attaches) throws Exception{
+    @PutMapping(value = "/attach/",
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Map<String, Object>> modify(@RequestBody List<FiroFile> attaches) throws Exception {
 
-        for(FiroFile attach : attaches) {
+        for (FiroFile attach : attaches) {
             firoService.updateAttach(attach);
         }
 
@@ -164,11 +165,11 @@ public class FiroApiResource {
     /**
      * GET    /attach/{refType}/{refKey} : 첨부 리스트 조회
      */
-    @GetMapping(value="/attach",
+    @GetMapping(value = "/attach",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<List<FiroFile>> list(@RequestParam Map<String, Object> param,
                                                @RequestParam(value = "domainKeyList", required = false) List<Long> domainKeyList,
-                                               @RequestParam(value = "categoryList", required = false) List<String> categoryList) throws Exception{
+                                               @RequestParam(value = "categoryList", required = false) List<String> categoryList) throws Exception {
         param.put("domainKeyList", domainKeyList);
         param.put("categoryList", categoryList);
         List<FiroFile> list = firoService.listAttach(param);
@@ -185,8 +186,8 @@ public class FiroApiResource {
     @GetMapping(value = "/attach/{domainName}/{domainKey}",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AttachBag> getAttach(HttpServletRequest request,
-                                                     @PathVariable("domainName") String refType,
-                                                     @PathVariable("domainKey") Long refKey) {
+                                               @PathVariable("domainName") String refType,
+                                               @PathVariable("domainKey") Long refKey) {
 
         return getAttach(request, refType, refKey, null, null);
     }
@@ -201,11 +202,11 @@ public class FiroApiResource {
     @GetMapping(value = "/attach/{domainName}/{domainKey}/{categoryName}",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<AttachBag> getAttach(HttpServletRequest request,
-                                                     @PathVariable("domainName") String refType,
-                                                     @PathVariable("domainKey") Long refKey,
-                                                     @PathVariable("categoryName") String categoryName,
-                                                     @RequestParam(value="q", required = false) Map<String, Object> param) {
-        if(param != null && param.containsKey("domainKeys")){
+                                               @PathVariable("domainName") String refType,
+                                               @PathVariable("domainKey") Long refKey,
+                                               @PathVariable("categoryName") String categoryName,
+                                               @RequestParam(value = "q", required = false) Map<String, Object> param) {
+        if (param != null && param.containsKey("domainKeys")) {
             refKey = null;
         }
 
@@ -232,14 +233,14 @@ public class FiroApiResource {
             try {
                 FiroFilter filter = FiroFilterRegistry.get(k);
                 boolean created = false;
-                if(filter == null) {
+                if (filter == null) {
                     created = true;
                     filter = filter.getClass().newInstance();
                 }
                 if (config == null || config.isEmpty()) {
                     filterChain.addFilter(filter);
                 } else {
-                    if(!created) {
+                    if (!created) {
                         filter = filter.getClass().newInstance();
                     }
                     filterChain.addFilter(filter, config);
