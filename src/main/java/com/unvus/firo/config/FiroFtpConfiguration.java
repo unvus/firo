@@ -2,14 +2,17 @@ package com.unvus.firo.config;
 
 import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.ftp.FtpAdapter;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.boot.autoconfigure.condition.ConditionalOnBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.core.annotation.Order;
 import org.springframework.integration.ftp.session.DefaultFtpSessionFactory;
 import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 
 @Configuration
-@ConditionalOnProperty(prefix="firo.ftp", name = "host")
+@ConditionalOnProperty(prefix = "firo.ftp", name = "host")
 public class FiroFtpConfiguration {
 
     private final FiroProperties firoProperties;

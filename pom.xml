@@ -33,7 +33,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
-        <unvus.version>1.4.0-SNAPSHOT</unvus.version>
+        <unvus.version>1.5.0-SNAPSHOT</unvus.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-io.version>2.5</commons-io.version>
@@ -90,7 +90,7 @@
         <dependency>
             <groupId>com.unvus</groupId>
             <artifactId>unvus-util</artifactId>
-            <version>1.4.0-SNAPSHOT</version>
+            <version>1.5.0-SNAPSHOT</version>
         </dependency>
 
         <dependency>
