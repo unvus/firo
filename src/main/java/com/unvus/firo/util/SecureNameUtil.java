@@ -9,12 +9,16 @@ import java.security.MessageDigest;
 
 public class SecureNameUtil {
     public static String gen(FiroCategory category, String refTargetKey, int index) {
+        return gen(category.getDomain().getCode(), category.getCode(), refTargetKey, index);
+    }
+
+    public static String gen(String domain, String category, String refTargetKey, int index) {
         try {
             MessageDigest digest = MessageDigest.getInstance("SHA-256");
             byte[] hash = digest.digest((
-                category.getDomain().getCode()
+                domain
                     + refTargetKey
-                    + category.getCode()
+                    + category
                     + index
                     + FiroRegistry.getSecret()
             ).getBytes(StandardCharsets.UTF_8));
@@ -27,7 +31,7 @@ public class SecureNameUtil {
                 hexString.append(hex);
             }
 
-            return category.getCode() + "_" + index + "_" + hexString.toString().substring(10, 10 + 20);
+            return category + "_" + index + "_" + hexString.toString().substring(10, 10 + 20);
         } catch (Exception ex) {
             throw new RuntimeException(ex);
         }

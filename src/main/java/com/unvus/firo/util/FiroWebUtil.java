@@ -1,5 +1,6 @@
 package com.unvus.firo.util;
 
+import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.AttachContainer;
@@ -105,6 +106,22 @@ public class FiroWebUtil {
         return JsonUtil.toMap(body);
     }
 
+    public static AttachContainer getAttachContainer() throws IOException {
+
+        return getAttachContainer(getRequestBodyMap());
+    }
+
+    public static AttachBag getAttachBag() throws IOException {
+        AttachContainer container = getAttachContainer(getRequestBodyMap());
+        Optional<AttachBag> firstElement = container.values().stream().findFirst();
+
+        return firstElement.orElse(null);
+    }
+
+    public static AttachBag getAttachBag(String refTarget) throws IOException {
+        return getAttachContainer(getRequestBodyMap()).get(refTarget);
+    }
+
     public static void writeFile(HttpServletResponse response, File f) throws IOException {
         FileInputStream fin = null;
         FileChannel inputChannel = null;
@@ -172,7 +189,6 @@ public class FiroWebUtil {
         }
 
     }
-
 
     public static void writeFileToClient(HttpServletResponse response, boolean isDownload, SimpleDateFormat dateFormat, String displayName, File f, String contentType) throws Exception {
         writeFileToClient(response, isDownload, dateFormat, displayName, f, contentType, null, null);

@@ -49,6 +49,16 @@ public class LocalAdapter implements Adapter {
     }
 
     @Override
+    public void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType) throws Exception {
+        String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
+        String tempFullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), tempFileName), directoryPathPolicy.getSeparator());
+
+        createDirectoryIfNotExists(fullDir);
+
+        rename(tempFullPath, fullPath);
+    }
+
+    @Override
     public void rename(String from, String to) throws Exception {
         Files.move(Paths.get(from), Paths.get(to));
     }

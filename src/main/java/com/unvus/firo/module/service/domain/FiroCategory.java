@@ -27,6 +27,10 @@ public class FiroCategory {
     private String directUrl;
 
     @Getter
+    @Setter
+    private boolean keepExt = false;
+
+    @Getter
     private DirectoryPathPolicy directoryPathPolicy;
 
     @Getter
@@ -39,7 +43,7 @@ public class FiroCategory {
 
     FiroCategory(FiroDomain domain, String code, String directUrl,
                  Adapter adapter, DirectoryPathPolicy directoryPathPolicy,
-                 FiroFilterChain filterChain, SecureAccessFunc secureAccessFunc) {
+                 FiroFilterChain filterChain, SecureAccessFunc secureAccessFunc, boolean keepExt) {
         this.domain = domain;
         this.code = code;
         this.directUrl = directUrl;
@@ -47,6 +51,7 @@ public class FiroCategory {
         this.directoryPathPolicy = directoryPathPolicy;
         this.filterChain = filterChain;
         this.secureAccessFunc = secureAccessFunc;
+        this.keepExt = keepExt;
     }
 
     public static FiroCategoryBuilder builder(FiroDomain domain, String categoryCode) {
@@ -61,6 +66,7 @@ public class FiroCategory {
         private DirectoryPathPolicy directoryPathPolicy;
         private FiroFilterChain filterChain;
         private SecureAccessFunc secureAccessFunc;
+        private boolean keepExt = false;
 
         public FiroCategoryBuilder(FiroDomain domain, String code) {
             this.domain = domain;
@@ -92,6 +98,11 @@ public class FiroCategory {
             return this;
         }
 
+        public FiroCategoryBuilder keepExt(boolean keepExt) {
+            this.keepExt = keepExt;
+            return this;
+        }
+
         public FiroCategory build() {
             if (code == null) {
                 code = "default";
@@ -112,7 +123,7 @@ public class FiroCategory {
                 secureAccessFunc = domain.getSecureAccessFunc();
             }
 
-            return new FiroCategory(domain, code, directUrl, adapter, directoryPathPolicy, filterChain, secureAccessFunc);
+            return new FiroCategory(domain, code, directUrl, adapter, directoryPathPolicy, filterChain, secureAccessFunc, keepExt);
         }
     }
 
@@ -130,6 +141,10 @@ public class FiroCategory {
 
     public void write(String fullDir, String path, InputStream in, long size, String contentType) throws Exception {
         adapter.write(this.directoryPathPolicy, fullDir, path, in, size, contentType);
+    }
+
+    public void writeFromTemp(String fullDir, String path, String tempFileName, long size, String contentType) throws Exception {
+        adapter.writeFromTemp(this.directoryPathPolicy, fullDir, path, tempFileName, size, contentType);
     }
 
     public void rename(String from, String to) throws Exception {

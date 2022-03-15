@@ -29,7 +29,7 @@ public class FiroUploadAspect {
 
     private final FiroService firoService;
 
-    @Around("execution(public * *(.., @FiroUpload (*), ..)) && args(domain, ..)")
+    @Around("execution(public * *(.., @com.unvus.firo.annotation.FiroUpload (*), ..)) && args(domain, ..)")
     public Object pointcut(ProceedingJoinPoint joinPoint, Object domain) throws Throwable {
         FieldMap bodyMap = FiroWebUtil.getRequestBodyMap();
         Object result = joinPoint.proceed();
@@ -49,6 +49,11 @@ public class FiroUploadAspect {
 
         // execute method
         Object result = joinPoint.proceed();
+
+        if(firoUpload.legacy()) {
+            return result;
+        }
+
         try {
             Object[] args = joinPoint.getArgs();
 
@@ -76,7 +81,6 @@ public class FiroUploadAspect {
             if (parameterAnnotation != null) {
                 targetMap.put(args[idx], FiroWebUtil.getAttachContainer(bodyMap));
                 extractFiroDomainObject(args[idx], targetMap, bodyMap);
-                upload(targetMap, parameterAnnotation);
             } else {
                 // 메소드 파라미터 중 클래스 레벨에 FiroDomain 어노테이션이 선언되어 있는 파라미터 구하기
                 for (Object arg : args) {
@@ -84,10 +88,11 @@ public class FiroUploadAspect {
                         extractFiroDomainObject(arg, targetMap, bodyMap);
                     }
                 }
-
-                upload(targetMap, null);
             }
 
+            upload(targetMap, null);
+        } catch(Exception e) {
+            e.printStackTrace();
         } finally {
             return result;
         }
@@ -128,11 +133,11 @@ public class FiroUploadAspect {
             // source 가 배열이면 iterate 돌면서 재귀호출
             int idx = 0;
             for (Object item : (Collection<?>) source) {
-                extractFiroDomainObject(item, targetMap, ((List<?>) bodyMap).get(idx++));
+                extractFiroDomainObject(item, targetMap, ((List<?>)bodyMap).get(idx++));
             }
         } else if (source.getClass().isAnnotationPresent(FiroDomain.class)) {
             // source 개체에 FiroDomain 이 선언되어 있으면 대상에 추가
-            if (!targetMap.containsKey(source)) {
+            if(!targetMap.containsKey(source)) {
                 targetMap.put(source, FiroWebUtil.getAttachContainer((Map) bodyMap));
             }
 
@@ -147,6 +152,11 @@ public class FiroUploadAspect {
                         continue;
                     }
                     List<?> bodyItemList = (List<?>) ((Map) bodyMap).get(field.getName());
+
+                    if(items.size() != bodyItemList.size()) {
+                        continue;
+                    }
+
                     int idx = 0;
                     for (Object item : items) {
                         extractFiroDomainObject(item, targetMap, bodyItemList.get(idx++));
@@ -158,5 +168,4 @@ public class FiroUploadAspect {
             }
         }
     }
-
 }

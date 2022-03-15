@@ -80,6 +80,19 @@ public class FtpAdapter implements Adapter {
     }
 
     @Override
+    public void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType) throws Exception {
+        String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
+        String tempFullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), tempFileName), directoryPathPolicy.getSeparator());
+        template
+            .execute(session -> {
+                createDirectoryIfNotExists(session, fullDir);
+                session.rename(tempFullPath, fullPath);
+
+                return null;
+            });
+    }
+
+    @Override
     public void rename(String from, String to) throws Exception {
         template
             .execute(session -> {

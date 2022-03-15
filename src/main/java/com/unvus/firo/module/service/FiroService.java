@@ -146,7 +146,7 @@ public class FiroService {
                     if (attach.getId() != null) {
                         if (!attach.getSavedName().startsWith(categoryCode + "_" + index + "_")) {
                             // 이미 저장된 파일이지만 index(순서) 가 변경된 경우, 파일 이름을 다시 생성해서 저장한다.
-                            FiroFile firoFile = firoRepository.getOne(attach.getId());
+                            FiroFile firoFile = firoRepository.getById(attach.getId());
                             String newFileName = SecureNameUtil.gen(category, firoFile.getId().toString(), index);
 
                             category.rename(
@@ -157,16 +157,8 @@ public class FiroService {
                             firoRepository.save(firoFile);
                         }
                     } else {
-                        File inputFile = category.readTemp(attach.getSavedName());
+                        FiroFile newAttach = persistFile(category, domainKey, index, date, attach);
 
-                        FiroFile newAttach = persistFile(category, domainKey, index, attach.getDisplayName(), inputFile, date, attach.getExt());
-
-                        Adapter adapter = FiroRegistry.getAdapter(AdapterType.LOCAL);
-                        adapter.deleteTemp(FiroRegistry.getLocalDirectoryPathPolicy(), attach.getSavedName());
-
-                        if (!category.getAdapter().supports(AdapterType.LOCAL)) {
-                            category.deleteTemp(attach.getSavedName());
-                        }
                         newAttachList.add(newAttach);
                     }
                 } catch (Exception e) {
@@ -181,7 +173,7 @@ public class FiroService {
     }
 
 
-    public FiroFile persistFile(FiroCategory category, Long refTargetKey, int index, String displayName, File inputFile, LocalDateTime date, String ext) throws Exception {
+    public FiroFile persistFile(FiroCategory category, Long refTargetKey, int index, LocalDateTime date, FiroFile firoFile) throws Exception {
         // /my/base/domain/2020/11/
         String saveDir = category.getFullDir(date);
 
@@ -190,24 +182,27 @@ public class FiroService {
 
         String fileName = SecureNameUtil.gen(category, refTargetKey.toString(), index);
 
-        String fileType = detectFile(inputFile);
-        Long size = inputFile.length();
+        if(category.isKeepExt()) {
+            fileName += "." + StringUtils.substringAfterLast(firoFile.getDisplayName(), ".");
+        }
 
-        category.write(saveDir, fileName, new FileInputStream(inputFile), size, fileType);
+        String fileType = firoFile.getFileType();
+        Long size = firoFile.getFileSize();
 
-//        getAdapterInstance(null).upload();
+        category.writeFromTemp(saveDir, fileName, firoFile.getSavedName(), size, fileType);
+
         FiroFile attach = new FiroFile();
         attach.setRefTarget(category.getDomain().getCode());
         attach.setRefTargetKey(refTargetKey);
         attach.setRefTargetType(category.getCode());
-        attach.setDisplayName(displayName);
+        attach.setDisplayName(firoFile.getDisplayName());
         attach.setSavedName(fileName);
         // /domain/2020/11/821/default/
         attach.setSavedDir(StringUtils.removeStart(saveDir, category.getDirectoryPathPolicy().getBaseDir()));
-        attach.setFileSize(size);
-        attach.setFileType(fileType);
+        attach.setFileSize(firoFile.getFileSize());
+        attach.setFileType(firoFile.getFileType());
         attach.setAccessCnt(0);
-        attach.setExt(ext);
+        attach.setExt(firoFile.getExt());
         attach.setCreatedDt(LocalDateTime.now());
 
         firoRepository.save(attach);
