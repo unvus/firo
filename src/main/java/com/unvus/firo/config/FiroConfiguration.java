@@ -1,17 +1,16 @@
 package com.unvus.firo.config;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.policy.impl.DateDirectoryPathPolicy;
-import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.util.JsonUtil;
 import org.springframework.beans.factory.InitializingBean;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnMissingBean;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import org.springframework.integration.ftp.session.FtpRemoteFileTemplate;
 import org.springframework.plugin.core.config.EnablePluginRegistries;
 
 @EnablePluginRegistries({
@@ -33,7 +32,7 @@ public class FiroConfiguration {
     InitializingBean firoInitializingBean(DirectoryPathPolicy directoryPathPolicy) {
         return () -> {
             if (FiroRegistry.getDefaultDirectoryPathPolicy() == null) {
-                FiroRegistry.from(firoProperties, directoryPathPolicy);
+                FiroRegistry.defaults(firoProperties, directoryPathPolicy);
             }
         };
     }

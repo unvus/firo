@@ -46,7 +46,7 @@ public class FiroRegistry {
         this.adapterPluginRegistry = pluginRegistry;
     }
 
-    public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy) {
+    public static FiroRegistry defaults(FiroProperties props, DirectoryPathPolicy directoryPathPolicy) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = getAdapter(defaultAdapterType);
@@ -54,7 +54,7 @@ public class FiroRegistry {
         return INSTANCE;
     }
 
-    public static FiroRegistry from(FiroProperties props, AdapterType adapterType) {
+    public static FiroRegistry defaults(FiroProperties props, AdapterType adapterType) {
         DirectoryPathPolicy directoryPathPolicy = null;
         if (adapterType == AdapterType.LOCAL) {
             directoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
@@ -68,11 +68,11 @@ public class FiroRegistry {
 
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
 
-        from(props, directoryPathPolicy, adapterType);
+        defaults(props, directoryPathPolicy, adapterType);
         return INSTANCE;
     }
 
-    public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
+    public static FiroRegistry defaults(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = getAdapter(adapterType);
@@ -81,7 +81,7 @@ public class FiroRegistry {
         return INSTANCE;
     }
 
-    public static FiroRegistry from(FiroProperties props, Adapter adapter) {
+    public static FiroRegistry defaults(FiroProperties props, Adapter adapter) {
         DirectoryPathPolicy directoryPathPolicy = null;
         if (adapter.supports(AdapterType.LOCAL)) {
             directoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
@@ -95,12 +95,12 @@ public class FiroRegistry {
 
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
 
-        from(props, directoryPathPolicy, adapter);
+        defaults(props, directoryPathPolicy, adapter);
 
         return INSTANCE;
     }
 
-    public static FiroRegistry from(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
+    public static FiroRegistry defaults(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = adapter;
