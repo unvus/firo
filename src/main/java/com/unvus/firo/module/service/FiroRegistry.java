@@ -3,6 +3,8 @@ package com.unvus.firo.module.service;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.inject.Inject;
+
 import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
@@ -42,6 +44,7 @@ public class FiroRegistry {
 
     protected static String secret = "mExYTViNzQzOTE3YmQ4OWY3NTE4MmRkOTg2YmM2NjAyMjVjZTNjNjFkYzZjRhOTlhYWVhNGRjNT";
 
+    @Inject
     @Qualifier("adapterRegistry")
     public void setAdapterPluginRegistry(PluginRegistry pluginRegistry) {
         this.adapterPluginRegistry = pluginRegistry;
