@@ -7,12 +7,10 @@ import java.nio.file.Path;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.plugin.core.Plugin;
 import org.springframework.stereotype.Component;
 
 @Component
-@Qualifier("adapterRegistry")
 public interface Adapter extends Plugin<AdapterType> {
 
     File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream out, long size, String contentType) throws Exception;
