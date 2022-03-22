@@ -9,7 +9,7 @@ import java.time.LocalDateTime;
 
 @Data
 @Entity
-@Table(name = "firo_file")
+@Table(name = "cms_attach")
 public class FiroFile {
 
     // Raw attributes
