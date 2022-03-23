@@ -18,7 +18,6 @@ public class FiroFile {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @NotNull
     @Column(name = "attach_id", length = 19)
     protected Long id;
 
