@@ -18,100 +18,96 @@ public class FiroFile {
      */
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
-    @Column(name = "id", length = 19, nullable = false)
+    @NotNull
+    @Column(name = "attach_id", length = 19)
     protected Long id;
 
     /**
      * 참조구분
      */
     @NotNull
-    @Size(min = 1, max = 50)
-    @Column(name = "ref_target", length = 50, nullable = false)
+    @Size(max = 100)
+    @Column(name = "attach_ref_target")
     protected String refTarget;
 
     /**
      * 참조구분키
      */
     @NotNull
-    @Column(name = "ref_target_key", length = 19, nullable = false)
+    @Column(name = "attach_ref_target_key", length = 19)
     protected Long refTargetKey;
 
     /**
      * 참조타입
      */
-    @Column(name = "ref_target_type", length = 50)
+    @Size(max = 100)
+    @Column(name = "attach_ref_target_type")
     protected String refTargetType;
 
     /**
      * 표시파일명
      */
     @NotNull
-    @Column(name = "display_name", length = 500, nullable = false)
+    @Size(max = 300)
+    @Column(name = "attach_display_name")
     protected String displayName;
 
     /**
      * 저장파일명
      */
     @NotNull
-    @Column(name = "saved_name", length = 200, nullable = false)
+    @Size(max = 200)
+    @Column(name = "attach_saved_name")
     protected String savedName;
-
-    /**
-     * 파일 설명
-     */
-    @Column(name = "description", length = 4000)
-    protected String description;
 
     /**
      * 저장경로
      */
     @NotNull
-    @Column(name = "saved_dir", length = 500, nullable = false)
+    @Size(max = 150)
+    @Column(name = "attach_saved_dir")
     protected String savedDir;
 
     /**
      * 파일타입
      */
-    @Column(name = "file_type", length = 50)
+    @NotNull
+    @Size(max = 100)
+    @Column(name = "attach_file_type")
     protected String fileType;
 
     /**
      * 파일사이즈
      */
-    @NotNull
-    @Column(name = "file_size", length = 19, nullable = false)
+    @Column(name = "attach_file_size", length = 19)
     protected Long fileSize;
-
-    /**
-     * access 횟수
-     */
-    @NotNull
-    @Column(name = "access_cnt", length = 9, nullable = false)
-    protected Integer accessCnt;
 
     /**
      * 삭제여부
      */
     @NotNull
-    @Column(name = "deleted", nullable = false)
+    @Column(name = "attach_deleted")
     protected Boolean deleted = false;
 
     /**
      * 확장컬럼
      */
-    @Column(name = "ext", length = 2000)
+    @Size(max = 4000)
+    @Column(name = "attach_ext")
     protected String ext;
 
     /**
      * 등록자
      */
-    @Column(name = "created_by")
-    protected Long createdBy;
+    @Size(max = 50)
+    @Column(name = "attach_created_by")
+    protected String createdBy;
 
     /**
      * 등록일시
      */
-    @Column(name = "created_dt")
+    @NotNull
+    @Column(name = "attach_created_dt")
     protected LocalDateTime createdDt;
 
 //    /**

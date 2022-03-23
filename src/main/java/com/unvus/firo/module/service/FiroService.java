@@ -201,7 +201,6 @@ public class FiroService {
         attach.setSavedDir(StringUtils.removeStart(saveDir, category.getDirectoryPathPolicy().getBaseDir()));
         attach.setFileSize(firoFile.getFileSize());
         attach.setFileType(firoFile.getFileType());
-        attach.setAccessCnt(0);
         attach.setExt(firoFile.getExt());
         attach.setCreatedDt(LocalDateTime.now());
 
