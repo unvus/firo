@@ -33,7 +33,7 @@
         <maven.compiler.source>${java.version}</maven.compiler.source>
         <maven.compiler.target>${java.version}</maven.compiler.target>
         <spring-boot.version>2.2.7.RELEASE</spring-boot.version>
-        <unvus.version>1.5.0-SNAPSHOT</unvus.version>
+        <unvus.version>1.5.1-SNAPSHOT</unvus.version>
         <commons-beanutils.version>1.9.4</commons-beanutils.version>
         <commons-collections4.version>4.4</commons-collections4.version>
         <commons-io.version>2.5</commons-io.version>
@@ -43,7 +43,6 @@
         <querydsl.version>4.3.1</querydsl.version>
         <servlet-api.version>3.1.0</servlet-api.version>
         <slf4j.version>1.7.30</slf4j.version>
-        <tika.version>1.24.1</tika.version>
     </properties>
 
     <repositories>
@@ -108,7 +107,6 @@
         <dependency>
             <groupId>org.apache.tika</groupId>
             <artifactId>tika-core</artifactId>
-            <version>${tika.version}</version>
         </dependency>
 
         <dependency>
