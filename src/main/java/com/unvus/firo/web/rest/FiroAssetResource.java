@@ -60,7 +60,7 @@ public class FiroAssetResource {
 
         boolean isDownload = "download".equals(action);
 
-        SimpleDateFormat dateFormat = getCacheDateFormat();
+        SimpleDateFormat dateFormat = FiroWebUtil.getCacheDateFormat();
 
         if (!FiroWebUtil.needFreshResponse(request, dateFormat) && !isDownload) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -106,7 +106,7 @@ public class FiroAssetResource {
 
         boolean isDownload = "download".equals(action);
 
-        SimpleDateFormat dateFormat = getCacheDateFormat();
+        SimpleDateFormat dateFormat = FiroWebUtil.getCacheDateFormat();
 
         if (!FiroWebUtil.needFreshResponse(request, dateFormat) && !isDownload) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -194,7 +194,7 @@ public class FiroAssetResource {
 
         boolean isDownload = "download".equals(action);
 
-        SimpleDateFormat dateFormat = getCacheDateFormat();
+        SimpleDateFormat dateFormat = FiroWebUtil.getCacheDateFormat();
 
         if (!FiroWebUtil.needFreshResponse(request, dateFormat) && !isDownload) {
             response.setStatus(HttpServletResponse.SC_NOT_MODIFIED);
@@ -337,9 +337,4 @@ public class FiroAssetResource {
         return tf;
     }
 
-    private SimpleDateFormat getCacheDateFormat() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
-        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
-        return dateFormat;
-    }
 }
