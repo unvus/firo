@@ -1,16 +1,12 @@
 package com.unvus.firo.util;
 
-import com.unvus.firo.module.policy.DirectoryPathPolicy;
-import com.unvus.firo.module.service.FiroRegistry;
 import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.AttachContainer;
-import com.unvus.firo.module.service.domain.FiroCategory;
-import com.unvus.util.DateTools;
 import com.unvus.util.FieldMap;
 import com.unvus.util.JsonUtil;
-import org.apache.commons.beanutils.PropertyUtils;
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.io.IOUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.apache.tika.io.IOUtils;
 import org.springframework.web.context.request.RequestContextHolder;
 import org.springframework.web.context.request.ServletRequestAttributes;
 import org.springframework.web.util.ContentCachingRequestWrapper;
@@ -25,17 +21,14 @@ import java.awt.image.BufferedImage;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
 import java.net.URLEncoder;
 import java.nio.channels.Channels;
 import java.nio.channels.FileChannel;
 import java.nio.channels.WritableByteChannel;
 import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.*;
 
+@Slf4j
 public class FiroWebUtil {
 
     public static final String ATTACH_CONTAINER_KEY = "attachContainer";
@@ -135,9 +128,7 @@ public class FiroWebUtil {
         } catch (Exception e) {
             throw e;
         } finally {
-            IOUtils.closeQuietly(fin);
-            IOUtils.closeQuietly(inputChannel);
-            IOUtils.closeQuietly(outputChannel);
+            IOUtils.closeQuietly(fin, inputChannel, outputChannel);
         }
     }
 
@@ -214,5 +205,11 @@ public class FiroWebUtil {
             response.setContentLength((int) f.length());
             FiroWebUtil.writeFile(response, f);
         }
+    }
+
+    public static SimpleDateFormat getCacheDateFormat() {
+        SimpleDateFormat dateFormat = new SimpleDateFormat("EEE, dd MMM yyyy HH:mm:ss zzz");
+        dateFormat.setTimeZone(TimeZone.getTimeZone("GMT"));
+        return dateFormat;
     }
 }
