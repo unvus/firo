@@ -277,7 +277,7 @@ public class FiroService {
      */
     @Transactional(readOnly = true)
     public FiroFile getAttach(Long id) {
-        return firoRepository.getOne(id);
+        return firoRepository.getById(id);
     }
 
     /**
