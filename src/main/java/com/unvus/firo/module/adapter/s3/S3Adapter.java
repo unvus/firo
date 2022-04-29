@@ -228,4 +228,8 @@ public class S3Adapter implements Adapter {
 
         return transferManager;
     }
+
+    public AdapterType getAdapterType() {
+        return AdapterType.S3;
+    }
 }

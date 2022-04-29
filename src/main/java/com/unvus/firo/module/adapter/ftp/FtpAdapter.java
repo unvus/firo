@@ -138,4 +138,8 @@ public class FtpAdapter implements Adapter {
         return AdapterType.FTP == adapterType;
     }
 
+    public AdapterType getAdapterType() {
+        return AdapterType.FTP;
+    }
+
 }

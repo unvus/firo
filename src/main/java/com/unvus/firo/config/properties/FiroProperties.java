@@ -1,9 +1,13 @@
 package com.unvus.firo.config.properties;
 
+import com.unvus.firo.module.adapter.AdapterType;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import org.springframework.stereotype.Component;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import static org.apache.commons.net.ftp.FTPClient.PASSIVE_LOCAL_DATA_CONNECTION_MODE;
 
@@ -24,7 +28,7 @@ public class FiroProperties {
 
     private String directUrl;
 
-    private Local local = new Local();
+    private Local local = new Local(directory);
 
     private Ftp ftp = new Ftp();
 
@@ -35,6 +39,18 @@ public class FiroProperties {
     private Azure azure = new Azure();
 
     private final DatabaseProperties database = new DatabaseProperties();
+
+    private Map<AdapterType, AdapterProp> adapterMap = new HashMap();
+    public AdapterProp getAdapterProp(AdapterType adapterType) {
+        if(adapterMap.isEmpty()) {
+            adapterMap.put(AdapterType.LOCAL, local);
+            adapterMap.put(AdapterType.FTP, ftp);
+            adapterMap.put(AdapterType.SFTP, sftp);
+            adapterMap.put(AdapterType.S3, s3);
+            adapterMap.put(AdapterType.AZURE, azure);
+        }
+        return adapterMap.get(adapterType);
+    }
 
     @Getter
     @Setter
@@ -47,13 +63,19 @@ public class FiroProperties {
 
     @Getter
     @Setter
-    public static class Local {
+    public static class Local implements AdapterProp {
         private String directUrl;
+
+        private Directory directory;
+
+        public Local(Directory directory) {
+            this.directory = directory;
+        }
     }
 
     @Getter
     @Setter
-    public static class Ftp {
+    public static class Ftp implements AdapterProp {
         private String host;
         private int port = 21;
         private String username;
@@ -66,7 +88,7 @@ public class FiroProperties {
 
     @Getter
     @Setter
-    public static class Sftp {
+    public static class Sftp implements AdapterProp {
         private String host;
         private int port = 21;
         private String username;
@@ -79,7 +101,7 @@ public class FiroProperties {
 
     @Getter
     @Setter
-    public static class S3 {
+    public static class S3 implements AdapterProp {
         private String accessKey;
         private String secretKey;
         private String bucket;
@@ -93,11 +115,17 @@ public class FiroProperties {
 
     @Getter
     @Setter
-    public static class Azure {
+    public static class Azure implements AdapterProp {
         private String connectionString;
         private String container;
 
         private Directory directory = new Directory();
         private String directUrl;
+    }
+
+    public interface AdapterProp {
+        String getDirectUrl();
+
+        Directory getDirectory();
     }
 }

@@ -92,4 +92,8 @@ public class LocalAdapter implements Adapter {
     public boolean supports(AdapterType adapterType) {
         return AdapterType.LOCAL == adapterType;
     }
+
+    public AdapterType getAdapterType() {
+        return AdapterType.LOCAL;
+    }
 }

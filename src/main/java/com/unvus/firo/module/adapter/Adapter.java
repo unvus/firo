@@ -39,4 +39,6 @@ public interface Adapter extends Plugin<AdapterType> {
         }
         return path;
     }
+
+    AdapterType getAdapterType();
 }

@@ -59,24 +59,16 @@ public class FiroRegistry {
     }
 
     public static FiroRegistry defaults(FiroProperties props, AdapterType adapterType) {
-        DirectoryPathPolicy directoryPathPolicy = null;
-        if (adapterType == AdapterType.LOCAL) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
-        } else if (adapterType == AdapterType.FTP) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getFtp().getDirectory());
-        } else if (adapterType == AdapterType.SFTP) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getSftp().getDirectory());
-        } else if (adapterType == AdapterType.S3) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getS3().getDirectory());
-        }
+        FiroProperties.AdapterProp adapterProp = props.getAdapterProp(adapterType);
+        DirectoryPathPolicy directoryPathPolicy = buildDirectoryPathPolicy(adapterProp.getDirectory());
 
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
 
-        defaults(props, directoryPathPolicy, adapterType);
+        defaults(adapterProp, directoryPathPolicy, adapterType);
         return INSTANCE;
     }
 
-    public static FiroRegistry defaults(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
+    public static FiroRegistry defaults(FiroProperties.AdapterProp props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = getAdapter(adapterType);
@@ -86,25 +78,17 @@ public class FiroRegistry {
     }
 
     public static FiroRegistry defaults(FiroProperties props, Adapter adapter) {
-        DirectoryPathPolicy directoryPathPolicy = null;
-        if (adapter.supports(AdapterType.LOCAL)) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
-        } else if (adapter.supports(AdapterType.FTP)) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getFtp().getDirectory());
-        } else if (adapter.supports(AdapterType.SFTP)) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getSftp().getDirectory());
-        } else if (adapter.supports(AdapterType.S3)) {
-            directoryPathPolicy = buildDirectoryPathPolicy(props.getS3().getDirectory());
-        }
+        FiroProperties.AdapterProp adapterProp = props.getAdapterProp(adapter.getAdapterType());
+        DirectoryPathPolicy directoryPathPolicy = buildDirectoryPathPolicy(adapterProp.getDirectory());
 
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
 
-        defaults(props, directoryPathPolicy, adapter);
+        defaults(adapterProp, directoryPathPolicy, adapter);
 
         return INSTANCE;
     }
 
-    public static FiroRegistry defaults(FiroProperties props, DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
+    public static FiroRegistry defaults(FiroProperties.AdapterProp props, DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = adapter;
