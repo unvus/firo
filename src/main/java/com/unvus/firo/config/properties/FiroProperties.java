@@ -32,6 +32,8 @@ public class FiroProperties {
 
     private S3 s3 = new S3();
 
+    private Azure azure = new Azure();
+
     private final DatabaseProperties database = new DatabaseProperties();
 
     @Getter
@@ -84,6 +86,16 @@ public class FiroProperties {
         private String region;
         private String roleArn;
         private String compression = "Y"; // default: Y
+
+        private Directory directory = new Directory();
+        private String directUrl;
+    }
+
+    @Getter
+    @Setter
+    public static class Azure {
+        private String connectionString;
+        private String container;
 
         private Directory directory = new Directory();
         private String directUrl;

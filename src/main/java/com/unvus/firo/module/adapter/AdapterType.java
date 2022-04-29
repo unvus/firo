@@ -4,5 +4,6 @@ public enum AdapterType {
     LOCAL,
     FTP,
     SFTP,
-    S3;
+    S3,
+    AZURE;
 }
