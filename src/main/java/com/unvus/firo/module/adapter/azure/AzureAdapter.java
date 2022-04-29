@@ -2,10 +2,13 @@ package com.unvus.firo.module.adapter.azure;
 
 import com.amazonaws.services.s3.model.GetObjectRequest;
 import com.amazonaws.services.s3.transfer.Download;
+import com.azure.core.util.polling.PollResponse;
+import com.azure.core.util.polling.SyncPoller;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
+import com.azure.storage.blob.models.BlobCopyInfo;
 import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
@@ -56,12 +59,19 @@ public class AzureAdapter implements Adapter {
 
     @Override
     public void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType) throws Exception {
-
+        String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
+        String tempFullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), tempFileName), directoryPathPolicy.getSeparator());
+        rename(tempFullPath, fullPath);
     }
 
     @Override
     public void rename(String from, String to) throws Exception {
-
+        BlobClient sourceBlob = containerClient.getBlobClient(from);
+        BlobClient destBlob = containerClient.getBlobClient(to);
+        destBlob.copyFromUrl(sourceBlob.getBlobUrl());
+        if (destBlob.exists()) {
+            sourceBlob.delete();
+        }
     }
 
     @Override
@@ -78,12 +88,16 @@ public class AzureAdapter implements Adapter {
 
     @Override
     public void delete(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getBaseDir(), path), directoryPathPolicy.getSeparator());
+        BlobClient destBlob = containerClient.getBlobClient(fullPath);
+        destBlob.delete();
     }
 
     @Override
     public void deleteTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
-
+        String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
+        BlobClient destBlob = containerClient.getBlobClient(fullPath);
+        destBlob.delete();
     }
 
     @Override
