@@ -1,12 +1,14 @@
 package com.unvus.firo.module.service.domain;
 
 import lombok.Data;
+import org.hibernate.annotations.Proxy;
 
 import javax.persistence.*;
 import javax.validation.constraints.NotNull;
 import javax.validation.constraints.Size;
 import java.time.LocalDateTime;
 
+@Proxy(lazy = false)
 @Data
 @Entity
 @Table(name = "cms_attach")
@@ -109,6 +111,24 @@ public class FiroFile {
     @Column(name = "attach_created_dt")
     protected LocalDateTime createdDt;
 
+    @Override
+    public String toString() {
+        return "FiroFile{" +
+            "id=" + id +
+            ", refTarget='" + refTarget + '\'' +
+            ", refTargetKey=" + refTargetKey +
+            ", refTargetType='" + refTargetType + '\'' +
+            ", displayName='" + displayName + '\'' +
+            ", savedName='" + savedName + '\'' +
+            ", savedDir='" + savedDir + '\'' +
+            ", fileType='" + fileType + '\'' +
+            ", fileSize=" + fileSize +
+            ", deleted=" + deleted +
+            ", ext='" + ext + '\'' +
+            ", createdBy='" + createdBy + '\'' +
+            ", createdDt=" + createdDt +
+            '}';
+    }
 //    /**
 //     * 수정자
 //     */
