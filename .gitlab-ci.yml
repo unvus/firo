@@ -21,6 +21,6 @@ stages:
 deploy-unvus:
   stage: deploy
   script:
-    - ~/.jenv/bin/jenv global 17
+    - ~/.jenv/bin/jenv global 11
     - mvn clean deploy -B -e -Dmaven.test.skip=true
 
