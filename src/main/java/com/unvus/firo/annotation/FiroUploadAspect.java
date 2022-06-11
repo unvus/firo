@@ -153,6 +153,10 @@ public class FiroUploadAspect {
                     }
                     List<?> bodyItemList = (List<?>) ((Map) bodyMap).get(field.getName());
 
+                    if (bodyItemList == null) {
+                        continue;
+                    }
+
                     if(items.size() != bodyItemList.size()) {
                         continue;
                     }
