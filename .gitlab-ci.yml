@@ -1,4 +1,4 @@
-image: cschockaert/docker-npm-maven
+image: registry.unvus.com/unvus/unvus-build-env:dynamic
 
 variables:
   DOCKER_DRIVER: overlay
@@ -21,5 +21,6 @@ stages:
 deploy-unvus:
   stage: deploy
   script:
+    - ~/.jenv/bin/jenv global 17
     - mvn clean deploy -B -e -Dmaven.test.skip=true
 
