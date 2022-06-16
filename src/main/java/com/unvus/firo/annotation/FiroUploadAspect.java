@@ -81,6 +81,7 @@ public class FiroUploadAspect {
             if (parameterAnnotation != null) {
                 targetMap.put(args[idx], FiroWebUtil.getAttachContainer(bodyMap));
                 extractFiroDomainObject(args[idx], targetMap, bodyMap);
+                upload(targetMap, parameterAnnotation);
             } else {
                 // 메소드 파라미터 중 클래스 레벨에 FiroDomain 어노테이션이 선언되어 있는 파라미터 구하기
                 for (Object arg : args) {
@@ -88,9 +89,9 @@ public class FiroUploadAspect {
                         extractFiroDomainObject(arg, targetMap, bodyMap);
                     }
                 }
-            }
 
-            upload(targetMap, null);
+                upload(targetMap, null);
+            }
         } catch(Exception e) {
             e.printStackTrace();
         } finally {
@@ -105,6 +106,10 @@ public class FiroUploadAspect {
         for (Map.Entry<Object, AttachContainer> entry : targetMap.entrySet()) {
             Object target = entry.getKey();
             AttachContainer attachContainer = entry.getValue();
+
+            if(attachContainer == null || attachContainer.isEmpty()) {
+                continue;
+            }
 
             FiroDomain firoDomain = FiroUtil.getFiroDomain(target);
 
@@ -165,7 +170,7 @@ public class FiroUploadAspect {
                     for (Object item : items) {
                         extractFiroDomainObject(item, targetMap, bodyItemList.get(idx++));
                     }
-                } else if (!klass.isPrimitive() && !klass.getPackage().getName().startsWith("java.")) {
+                } else if (!field.getType().isPrimitive() && !field.getType().getPackage().getName().startsWith("java.")) {
                     // 필드가 자바 기본 타입이 아니라면 해당 값을 가지고 재귀호출
                     extractFiroDomainObject(PropertyUtils.getProperty(source, field.getName()), targetMap, ((Map) bodyMap).get(field.getName()));
                 }

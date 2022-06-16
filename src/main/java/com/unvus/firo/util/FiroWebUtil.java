@@ -80,6 +80,9 @@ public class FiroWebUtil {
         AttachContainer attachContainer = new AttachContainer();
         Map<String, Map> map = (Map) body.get(ATTACH_CONTAINER_KEY);
 
+        if(map == null) {
+            return attachContainer;
+        }
         for (Map.Entry<String, Map> entry : map.entrySet()) {
             AttachBag attachBag = JsonUtil.toObject(entry.getValue(), AttachBag.class);
             attachBag.setDomainCode(entry.getKey());
