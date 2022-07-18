@@ -64,16 +64,16 @@ public class FiroRegistry {
 
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
 
-        defaults(adapterProp, directoryPathPolicy, adapterType);
+        defaults(adapterProp, directoryPathPolicy, adapterType, props);
         return INSTANCE;
     }
 
-    public static FiroRegistry defaults(FiroProperties.AdapterProp props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType) {
+    public static FiroRegistry defaults(FiroProperties.AdapterProp props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType, FiroProperties firoProperties) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
         FiroRegistry.directoryPathPolicy = directoryPathPolicy;
         FiroRegistry.defaultAdapter = getAdapter(adapterType);
 
-        FiroRegistry.localDirectoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
+        FiroRegistry.localDirectoryPathPolicy = buildDirectoryPathPolicy(firoProperties.getLocal().getDirectory());
         return INSTANCE;
     }
 
