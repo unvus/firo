@@ -334,5 +334,21 @@
                 <activeByDefault>true</activeByDefault>
             </activation>
         </profile>
+        <profile>
+            <id>becook</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <distributionManagement>
+                <snapshotRepository>
+                    <id>becook-snapshots</id>
+                    <url>https://repo.bebecook.com/repository/maven-snapshots</url>
+                </snapshotRepository>
+                <repository>
+                    <id>becook-releases</id>
+                    <url>https://repo.bebecook.com/repository/maven-releases</url>
+                </repository>
+            </distributionManagement>
+        </profile>
     </profiles>
 </project>

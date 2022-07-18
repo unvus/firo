@@ -24,3 +24,9 @@ deploy-unvus:
     - ~/.jenv/bin/jenv global 11
     - mvn clean deploy -B -e -Dmaven.test.skip=true
 
+
+deploy-becook:
+  stage: deploy
+  script:
+    - ~/.jenv/bin/jenv global 11
+    - mvn clean deploy -B -e -Dmaven.test.skip=true -Pbecook
