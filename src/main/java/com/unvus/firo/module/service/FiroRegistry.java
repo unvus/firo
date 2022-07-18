@@ -59,43 +59,14 @@ public class FiroRegistry {
     }
 
     public static FiroRegistry defaults(FiroProperties props, AdapterType adapterType) {
-        FiroProperties.AdapterProp adapterProp = props.getAdapterProp(adapterType);
-        DirectoryPathPolicy directoryPathPolicy = buildDirectoryPathPolicy(adapterProp.getDirectory());
-
-        FiroRegistry.directoryPathPolicy = directoryPathPolicy;
-
-        defaults(adapterProp, directoryPathPolicy, adapterType, props);
-        return INSTANCE;
-    }
-
-    public static FiroRegistry defaults(FiroProperties.AdapterProp props, DirectoryPathPolicy directoryPathPolicy, AdapterType adapterType, FiroProperties firoProperties) {
         FiroRegistry.defaultDirectUrl = props.getDirectUrl();
-        FiroRegistry.directoryPathPolicy = directoryPathPolicy;
+        FiroRegistry.directoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
         FiroRegistry.defaultAdapter = getAdapter(adapterType);
 
-        FiroRegistry.localDirectoryPathPolicy = buildDirectoryPathPolicy(firoProperties.getLocal().getDirectory());
+        FiroRegistry.localDirectoryPathPolicy = buildDirectoryPathPolicy(props.getLocal().getDirectory());
         return INSTANCE;
     }
 
-    public static FiroRegistry defaults(FiroProperties props, Adapter adapter) {
-        FiroProperties.AdapterProp adapterProp = props.getAdapterProp(adapter.getAdapterType());
-        DirectoryPathPolicy directoryPathPolicy = buildDirectoryPathPolicy(adapterProp.getDirectory());
-
-        FiroRegistry.directoryPathPolicy = directoryPathPolicy;
-
-        defaults(adapterProp, directoryPathPolicy, adapter);
-
-        return INSTANCE;
-    }
-
-    public static FiroRegistry defaults(FiroProperties.AdapterProp props, DirectoryPathPolicy directoryPathPolicy, Adapter adapter) {
-        FiroRegistry.defaultDirectUrl = props.getDirectUrl();
-        FiroRegistry.directoryPathPolicy = directoryPathPolicy;
-        FiroRegistry.defaultAdapter = adapter;
-
-        FiroRegistry.localDirectoryPathPolicy = buildDirectoryPathPolicy(props.getDirectory());
-        return INSTANCE;
-    }
 
     public static FiroRegistry secret(String secret) {
         FiroRegistry.secret = secret;

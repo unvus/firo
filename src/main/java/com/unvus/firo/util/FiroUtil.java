@@ -106,16 +106,23 @@ public class FiroUtil {
             cache = cacheValue.toString();
         }
 
-        Path path =
-            Paths.get(
-                FiroRegistry.getDirectUrl(domain, category),
-                domain,
-                DateTimeFormatter.ofPattern("yyyy/MM").format(createdDt),
-                domainId,
-                SecureNameUtil.gen(firoCategory, domainId, index)
-            );
+        String directUrl = FiroRegistry.getDirectUrl(domain, category);
+        if(directUrl != null) {
+            Path path =
+                Paths.get(
+                    FiroRegistry.getDirectUrl(domain, category),
+                    domain,
+                    DateTimeFormatter.ofPattern("yyyy/MM").format(createdDt),
+                    domainId,
+                    SecureNameUtil.gen(firoCategory, domainId, index)
+                );
 
-        return path.toString() + "?cache=" + cache;
+            return path.toString() + "?cache=" + cache;
+        }else {
+            return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
+        }
+
+
     }
 
     public static String directUrl(String domain, String category, String domainId, LocalDateTime createdDt, Integer index) throws Exception {
@@ -134,6 +141,12 @@ public class FiroUtil {
                 SecureNameUtil.gen(firoCategory, domainId, index)
             );
 
-        return FiroRegistry.getDirectUrl(domain, category) + path.toString();
+        String directUrl = FiroRegistry.getDirectUrl(domain, category);
+        if(directUrl != null) {
+            return directUrl + path.toString();
+        }else {
+            return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
+        }
+
     }
 }
