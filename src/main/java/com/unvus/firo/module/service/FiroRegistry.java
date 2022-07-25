@@ -42,12 +42,19 @@ public class FiroRegistry {
 
     protected static SecureAccessFunc defaultSecureAccessFunc = null;
 
+    protected static FiroProperties firoProperties;
+
     protected static String secret = "mExYTViNzQzOTE3YmQ4OWY3NTE4MmRkOTg2YmM2NjAyMjVjZTNjNjFkYzZjRhOTlhYWVhNGRjNT";
 
     @Inject
     @Qualifier("adapterRegistry")
     public void setAdapterPluginRegistry(PluginRegistry pluginRegistry) {
         this.adapterPluginRegistry = pluginRegistry;
+    }
+
+    @Inject
+    public void setFiroProperties(FiroProperties firoProperties) {
+        this.firoProperties = firoProperties;
     }
 
     public static FiroRegistry defaults(FiroProperties props, DirectoryPathPolicy directoryPathPolicy) {
@@ -155,7 +162,18 @@ public class FiroRegistry {
     }
 
     protected static FiroDomain createDefaultDomain(String domainCode) {
-        FiroDomain domain = FiroDomain.builder(domainCode).build();
+        FiroDomain domain;
+        if(defaultAdapter.getAdapterType() == AdapterType.LOCAL) {
+            domain = FiroDomain.builder(domainCode).build();
+        }else {
+            FiroProperties.AdapterProp prop = firoProperties.getAdapterProp(defaultAdapter.getAdapterType());
+
+            domain = FiroDomain.builder(domainCode).directoryPathPolicy(new DateDirectoryPathPolicy(
+                DateDirectoryPathPolicy.DATE_SUBDIR_TYPE.YYYY_MM,
+                prop.getDirectory().getBaseDir(),
+                prop.getDirectory().getTmpDir()
+            )).build();
+        }
 
         domainMap.put(domainCode, domain);
 
