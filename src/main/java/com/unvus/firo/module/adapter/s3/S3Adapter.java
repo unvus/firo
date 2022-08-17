@@ -94,18 +94,20 @@ public class S3Adapter implements Adapter {
     }
 
     @Override
-    public void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType) throws Exception {
+    public void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType, boolean keepTemp) throws Exception {
         String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
         String tempFullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), tempFileName), directoryPathPolicy.getSeparator());
 
-        rename(tempFullPath, fullPath);
+        rename(tempFullPath, fullPath, keepTemp);
     }
 
     @Override
-    public void rename(String from, String to) throws Exception {
+    public void rename(String from, String to, boolean keepFrom) throws Exception {
         CopyObjectRequest copyObjRequest = new CopyObjectRequest(props.getBucket(), from, props.getBucket(), to);
         tm.getAmazonS3Client().copyObject(copyObjRequest);
-        tm.getAmazonS3Client().deleteObject(props.getBucket(), from);
+        if(!keepFrom) {
+            tm.getAmazonS3Client().deleteObject(props.getBucket(), from);
+        }
     }
 
     @Override

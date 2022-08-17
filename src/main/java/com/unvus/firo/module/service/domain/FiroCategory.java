@@ -143,12 +143,12 @@ public class FiroCategory {
         adapter.write(this.directoryPathPolicy, fullDir, path, in, size, contentType);
     }
 
-    public void writeFromTemp(String fullDir, String path, String tempFileName, long size, String contentType) throws Exception {
-        adapter.writeFromTemp(this.directoryPathPolicy, fullDir, path, tempFileName, size, contentType);
+    public void writeFromTemp(String fullDir, String path, String tempFileName, long size, String contentType, boolean keepTemp) throws Exception {
+        adapter.writeFromTemp(this.directoryPathPolicy, fullDir, path, tempFileName, size, contentType, keepTemp);
     }
 
-    public void rename(String from, String to) throws Exception {
-        adapter.rename(from, to);
+    public void rename(String from, String to, boolean keepFrom) throws Exception {
+        adapter.rename(from, to, keepFrom);
     }
 
     public void delete(String path) throws Exception {

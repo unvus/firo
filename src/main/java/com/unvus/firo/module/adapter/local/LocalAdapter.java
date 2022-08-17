@@ -49,18 +49,22 @@ public class LocalAdapter implements Adapter {
     }
 
     @Override
-    public void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType) throws Exception {
+    public void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType, boolean keepTemp) throws Exception {
         String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
         String tempFullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), tempFileName), directoryPathPolicy.getSeparator());
 
         createDirectoryIfNotExists(fullDir);
 
-        rename(tempFullPath, fullPath);
+        rename(tempFullPath, fullPath, keepTemp);
     }
 
     @Override
-    public void rename(String from, String to) throws Exception {
-        Files.move(Paths.get(from), Paths.get(to));
+    public void rename(String from, String to, boolean keepFrom) throws Exception {
+        if(keepFrom) {
+            // TODO
+        }else {
+            Files.move(Paths.get(from), Paths.get(to));
+        }
     }
 
     @Override

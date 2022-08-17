@@ -17,9 +17,9 @@ public interface Adapter extends Plugin<AdapterType> {
 
     void write(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, InputStream out, long size, String contentType) throws Exception;
 
-    void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType) throws Exception;
+    void writeFromTemp(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, String tempFileName, long size, String contentType, boolean keepTemp) throws Exception;
 
-    void rename(String from, String to) throws Exception;
+    void rename(String from, String to, boolean keepFrom) throws Exception;
 
     File readTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception;
 

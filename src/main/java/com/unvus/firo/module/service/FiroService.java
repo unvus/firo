@@ -112,6 +112,11 @@ public class FiroService {
 
     @Transactional
     public List<FiroFile> save(Long domainKey, AttachBag bag, LocalDateTime date, boolean cleanDomain) throws Exception {
+        return this.save(domainKey, bag, date, cleanDomain, false);
+    }
+
+    @Transactional
+    public List<FiroFile> save(Long domainKey, AttachBag bag, LocalDateTime date, boolean cleanDomain, boolean keepTemp) throws Exception {
         List<FiroFile> newAttachList = new ArrayList();
 
         if (bag == null || bag.isEmpty()) {
@@ -151,13 +156,14 @@ public class FiroService {
 
                             category.rename(
                                 Paths.get(baseDir, firoFile.getSavedDir(), firoFile.getSavedName()).toString(),
-                                Paths.get(baseDir, firoFile.getSavedDir(), newFileName).toString());
+                                Paths.get(baseDir, firoFile.getSavedDir(), newFileName).toString(),
+                                false);
 
                             firoFile.setSavedName(newFileName);
                             firoRepository.save(firoFile);
                         }
                     } else {
-                        FiroFile newAttach = persistFile(category, domainKey, index, date, attach);
+                        FiroFile newAttach = persistFile(category, domainKey, index, date, attach, keepTemp);
 
                         newAttachList.add(newAttach);
                     }
@@ -173,7 +179,7 @@ public class FiroService {
     }
 
 
-    public FiroFile persistFile(FiroCategory category, Long refTargetKey, int index, LocalDateTime date, FiroFile firoFile) throws Exception {
+    public FiroFile persistFile(FiroCategory category, Long refTargetKey, int index, LocalDateTime date, FiroFile firoFile, boolean keepTemp) throws Exception {
         // /my/base/domain/2020/11/
         String saveDir = category.getFullDir(date);
 
@@ -189,7 +195,7 @@ public class FiroService {
         String fileType = firoFile.getFileType();
         Long size = firoFile.getFileSize();
 
-        category.writeFromTemp(saveDir, fileName, firoFile.getSavedName(), size, fileType);
+        category.writeFromTemp(saveDir, fileName, firoFile.getSavedName(), size, fileType, keepTemp);
 
         FiroFile attach = new FiroFile();
         attach.setRefTarget(category.getDomain().getCode());
