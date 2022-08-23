@@ -41,8 +41,8 @@ public class AzureAdapter implements Adapter {
         // return a container client object
         containerClient = serviceClient.getBlobContainerClient(props.getContainer());
 
-        containerClient.listBlobs()
-            .forEach(blobItem -> System.out.println("Blob name: " + blobItem.getName() + ", Snapshot: " + blobItem.getSnapshot()));
+//        containerClient.listBlobs()
+//            .forEach(blobItem -> System.out.println("Blob name: " + blobItem.getName() + ", Snapshot: " + blobItem.getSnapshot()));
     }
 
     @Override
