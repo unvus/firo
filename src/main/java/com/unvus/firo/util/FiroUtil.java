@@ -8,6 +8,7 @@ import com.unvus.util.DateTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
 
+import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
@@ -31,9 +32,16 @@ public class FiroUtil {
     }
 
     public static com.unvus.firo.annotation.FiroDomain getFiroDomain(Object obj) {
-        return obj.getClass().getAnnotation(com.unvus.firo.annotation.FiroDomain.class);
+        Class klass = obj.getClass();
+        while (klass != null) {
+            Annotation annotation = klass.getAnnotation(com.unvus.firo.annotation.FiroDomain.class);
+            if(annotation != null) {
+                return (com.unvus.firo.annotation.FiroDomain)annotation;
+            }
+            klass = klass.getSuperclass();
+        }
+        return null;
     }
-
 
     public static Long getFiroDomainKey(Object obj) throws Exception {
         return getFiroDomainKey(obj, getFiroDomain(obj));
