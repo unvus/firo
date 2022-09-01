@@ -13,6 +13,8 @@ import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
@@ -29,9 +31,14 @@ public class AzureAdapter implements Adapter {
     private BlobContainerClient containerClient;
     private final FiroProperties.Azure props;
 
+    @Getter
+    @Setter
+    private String directUrl;
+
     public AzureAdapter(FiroProperties.Azure props) throws Exception {
         init(props);
         this.props = props;
+        this.directUrl = props.getDirectUrl();
     }
 
     private void init(FiroProperties.Azure props) {

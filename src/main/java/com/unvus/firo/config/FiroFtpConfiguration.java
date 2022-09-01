@@ -41,6 +41,6 @@ public class FiroFtpConfiguration {
 
     @Bean
     public FtpAdapter firoFtpAdapter() {
-        return new FtpAdapter(firoFtpRemoteFileTemplate());
+        return new FtpAdapter(firoFtpRemoteFileTemplate(), firoProperties.getFtp().getDirectUrl());
     }
 }

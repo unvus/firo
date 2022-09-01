@@ -3,6 +3,8 @@ package com.unvus.firo.module.adapter.local;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
+import lombok.Getter;
+import lombok.Setter;
 
 import java.io.File;
 import java.io.IOException;
@@ -12,6 +14,10 @@ import java.nio.file.Path;
 import java.nio.file.Paths;
 
 public class LocalAdapter implements Adapter {
+
+    @Getter
+    @Setter
+    private String directUrl;
 
     @Override
     public File readTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {

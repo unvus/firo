@@ -109,6 +109,9 @@ public class FiroRegistry {
             if (category != null) {
                 result = category.getDirectUrl();
             }
+            if(result == null) {
+                result = category.getAdapter().getDirectUrl();
+            }
         }
         return result;
     }

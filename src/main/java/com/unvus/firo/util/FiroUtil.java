@@ -118,7 +118,7 @@ public class FiroUtil {
         if(directUrl != null) {
             Path path =
                 Paths.get(
-                    FiroRegistry.getDirectUrl(domain, category),
+                    directUrl,
                     domain,
                     DateTimeFormatter.ofPattern("yyyy/MM").format(createdDt),
                     domainId,

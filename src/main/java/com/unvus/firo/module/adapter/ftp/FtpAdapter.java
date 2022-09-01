@@ -4,6 +4,8 @@ package com.unvus.firo.module.adapter.ftp;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.StringUtils;
 import org.springframework.integration.file.remote.session.Session;
@@ -21,8 +23,13 @@ public class FtpAdapter implements Adapter {
 
     private final FtpRemoteFileTemplate template;
 
-    public FtpAdapter(FtpRemoteFileTemplate template) {
+    @Getter
+    @Setter
+    private String directUrl;
+
+    public FtpAdapter(FtpRemoteFileTemplate template, String directUrl) {
         this.template = template;
+        this.directUrl = directUrl;
     }
 
     @Override

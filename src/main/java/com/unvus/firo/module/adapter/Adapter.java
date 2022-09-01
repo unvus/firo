@@ -29,6 +29,8 @@ public interface Adapter extends Plugin<AdapterType> {
 
     void deleteTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception;
 
+    String getDirectUrl();
+
     static String adjustSeparator(Path path, String separator) {
         return adjustSeparator(path.toString(), separator);
     }

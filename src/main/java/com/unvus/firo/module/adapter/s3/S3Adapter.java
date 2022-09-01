@@ -20,6 +20,8 @@ import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.policy.DirectoryPathPolicy;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
+import lombok.Getter;
+import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.RandomStringUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -34,9 +36,14 @@ public class S3Adapter implements Adapter {
     private final TransferManager tm;
     private final FiroProperties.S3 props;
 
+    @Getter
+    @Setter
+    private String directUrl;
+
     public S3Adapter(FiroProperties.S3 props) throws Exception {
         this.tm = createManager(props);
         this.props = props;
+        this.directUrl = props.getDirectUrl();
     }
 
     @Override
