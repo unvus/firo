@@ -3,7 +3,9 @@ package com.unvus.firo.util;
 import com.unvus.firo.annotation.FiroDomainDate;
 import com.unvus.firo.annotation.FiroDomainKey;
 import com.unvus.firo.module.service.FiroRegistry;
+import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.FiroCategory;
+import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.util.DateTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
@@ -17,6 +19,7 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.time.temporal.TemporalAccessor;
+import java.util.List;
 
 @Slf4j
 public class FiroUtil {
@@ -83,6 +86,17 @@ public class FiroUtil {
         return (LocalDateTime) date;
     }
 
+    public static void injectDirectUrlToFireFile(Object obj, List<FiroFile> fileList) throws Exception {
+        int idx = 0;
+        for(FiroFile ff : fileList) {
+            try {
+                ff.setDirectUrl(directUrl(obj, ff.getRefTargetType(), idx++));
+            }catch(Exception e) {
+                e.printStackTrace();
+            }
+        }
+    }
+
     public static String directUrl(Object obj, String category) throws Exception {
         return directUrl(obj, category, 0);
     }
@@ -103,14 +117,13 @@ public class FiroUtil {
             category = "default";
         }
 
-        String cache;
+        String cache = null;
         if (cacheValue == null) {
             cacheValue = PropertyUtils.getProperty(obj, "modifiedDt");
         }
-
         if (cacheValue instanceof LocalDateTime) {
             cache = DateTools.convert((LocalDateTime) cacheValue, DateTools.ConvertTo.LONG).toString();
-        } else {
+        }else if(cacheValue != null) {
             cache = cacheValue.toString();
         }
 
@@ -125,7 +138,7 @@ public class FiroUtil {
                     SecureNameUtil.gen(firoCategory, domainId, index)
                 );
 
-            return path.toString() + "?cache=" + cache;
+            return path.toString() + (cache == null?"":"?cache=" + cache);
         }else {
             return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
         }

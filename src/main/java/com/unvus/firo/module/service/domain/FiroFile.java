@@ -111,6 +111,8 @@ public class FiroFile {
     @Column(name = "attach_created_dt")
     protected LocalDateTime createdDt;
 
+    protected String directUrl;
+
     @Override
     public String toString() {
         return "FiroFile{" +
