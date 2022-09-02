@@ -86,7 +86,7 @@ public class FiroUtil {
         return (LocalDateTime) date;
     }
 
-    public List<FiroFile> injectDirectUrlToFireFile(Object obj, List<FiroFile> fileList) throws Exception {
+    public static List<FiroFile> injectDirectUrlToFireFile(Object obj, List<FiroFile> fileList) throws Exception {
         int idx = 0;
         for(FiroFile ff : fileList) {
             try {
