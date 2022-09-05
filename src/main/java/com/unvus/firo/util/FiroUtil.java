@@ -88,6 +88,9 @@ public class FiroUtil {
 
     public static List<FiroFile> injectDirectUrlToFireFile(Object obj, List<FiroFile> fileList) throws Exception {
         int idx = 0;
+        if(fileList == null) {
+            return null;
+        }
         for(FiroFile ff : fileList) {
             try {
                 ff.setDirectUrl(directUrl(obj, ff.getRefTargetType(), idx++));
