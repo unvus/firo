@@ -336,9 +336,6 @@
         </profile>
         <profile>
             <id>becook</id>
-            <activation>
-                <activeByDefault>true</activeByDefault>
-            </activation>
             <distributionManagement>
                 <snapshotRepository>
                     <id>becook-snapshots</id>
