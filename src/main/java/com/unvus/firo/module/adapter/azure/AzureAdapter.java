@@ -1,14 +1,9 @@
 package com.unvus.firo.module.adapter.azure;
 
-import com.amazonaws.services.s3.model.GetObjectRequest;
-import com.amazonaws.services.s3.transfer.Download;
-import com.azure.core.util.polling.PollResponse;
-import com.azure.core.util.polling.SyncPoller;
 import com.azure.storage.blob.BlobClient;
 import com.azure.storage.blob.BlobContainerClient;
 import com.azure.storage.blob.BlobServiceClient;
 import com.azure.storage.blob.BlobServiceClientBuilder;
-import com.azure.storage.blob.models.BlobCopyInfo;
 import com.unvus.firo.config.properties.FiroProperties;
 import com.unvus.firo.module.adapter.Adapter;
 import com.unvus.firo.module.adapter.AdapterType;
@@ -18,7 +13,6 @@ import lombok.Setter;
 import lombok.extern.slf4j.Slf4j;
 
 import java.io.File;
-import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.nio.file.Files;
 import java.nio.file.Paths;
@@ -56,6 +50,7 @@ public class AzureAdapter implements Adapter {
     public File writeTemp(DirectoryPathPolicy directoryPathPolicy, String path, InputStream out, long size, String contentType) throws Exception {
         String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
         BlobClient blobClient = containerClient.getBlobClient(adjustPath(fullPath));
+//        upload(blobClient, out, size, contentType);
         blobClient.upload(out, size);
         return null;
     }
@@ -64,6 +59,7 @@ public class AzureAdapter implements Adapter {
     public void write(DirectoryPathPolicy directoryPathPolicy, String fullDir, String path, InputStream out, long size, String contentType) throws Exception {
         String fullPath = Adapter.adjustSeparator(Paths.get(fullDir, path), directoryPathPolicy.getSeparator());
         BlobClient blobClient = containerClient.getBlobClient(adjustPath(fullPath));
+//        upload(blobClient, out, size, contentType);
         blobClient.upload(out, size);
     }
 
@@ -130,6 +126,17 @@ public class AzureAdapter implements Adapter {
         }
         return path;
     }
+
+//    private void upload(BlobClient blobClient, InputStream data, long size, String contentType) {
+//        BlobRequestConditions blobRequestConditions = new BlobRequestConditions();
+//        BlobHttpHeaders headers = new BlobHttpHeaders();
+//        headers.setCacheControl("no-cache");
+//        if(StringUtils.isNotBlank(contentType)) {
+//            headers.setContentType(contentType);
+//        }
+//
+//        blobClient.uploadWithResponse(data, size, (ParallelTransferOptions)null, headers, (Map)null, (AccessTier)null, new BlobRequestConditions(), (Duration)null, Context.NONE);
+//    }
 
     public AdapterType getAdapterType() {
         return AdapterType.AZURE;
