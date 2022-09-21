@@ -26,10 +26,14 @@ public class SecureNameUtil {
             StringBuffer hexString = new StringBuffer();
 
             for (int i = 0; i < hash.length; i++) {
+                System.out.println("hash:" + hash[i]);
+                System.out.println("0xff & hash[i]:" + (0xff & hash[i]));
                 String hex = Integer.toHexString(0xff & hash[i]);
+                System.out.println("hex:" + hex);
                 if (hex.length() == 1) hexString.append('0');
                 hexString.append(hex);
             }
+            System.out.println("full:" + hexString);
 
             return category + "_" + index + "_" + hexString.toString().substring(10, 10 + 20);
         } catch (Exception ex) {
@@ -39,5 +43,9 @@ public class SecureNameUtil {
 
     public static String genDir(DirectoryPathPolicy dpp, String refTargetKey) {
         return refTargetKey + dpp.getSeparator();
+    }
+
+    public static void main(String[] args) {
+        System.out.println("generated: " + SecureNameUtil.gen("product", "main", "32", 0));
     }
 }
