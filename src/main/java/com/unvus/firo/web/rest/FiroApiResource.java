@@ -219,6 +219,32 @@ public class FiroApiResource {
             );
     }
 
+    /**
+     * GET  /attach/{refType}/{refKey} : 첨부 상세 수량 조회
+     *
+     * @param refType 제품 아이디 (시퀀스키값)
+     * @return 제품 객체
+     */
+    @GetMapping(value = "/attach/{domainName}/{domainKey}/{categoryName}/_count",
+        produces = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Long> getAttachCnt(HttpServletRequest request,
+                                               @PathVariable("domainName") String refType,
+                                               @PathVariable("domainKey") Long refKey,
+                                               @PathVariable("categoryName") String categoryName,
+                                               @RequestParam(value = "q", required = false) Map<String, Object> param) {
+        if (param != null && param.containsKey("domainKeys")) {
+            refKey = null;
+        }
+
+        Long cnt = firoService.listAttachCntByRef(refType, refKey, categoryName);
+
+        return Optional.ofNullable(cnt)
+            .map(product -> new ResponseEntity<>(product, HttpStatus.OK))
+            .orElse(
+                new ResponseEntity<>(HttpStatus.INTERNAL_SERVER_ERROR)
+            );
+    }
+
     @PostMapping(value = "/direct-url",
         produces = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<String> getAttach(@RequestBody DirectUrlParam param) throws Exception {
