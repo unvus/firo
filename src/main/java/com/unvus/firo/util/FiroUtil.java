@@ -135,14 +135,13 @@ public class FiroUtil {
         if(directUrl != null) {
             Path path =
                 Paths.get(
-                    directUrl,
                     domain,
                     DateTimeFormatter.ofPattern("yyyy/MM").format(createdDt),
                     domainId,
                     SecureNameUtil.gen(firoCategory, domainId, index)
                 );
 
-            return path.toString() + (cache == null?"":"?cache=" + cache);
+            return directUrl + path.toString() + (cache == null?"":"?cache=" + cache);
         }else {
             return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
         }
