@@ -81,6 +81,15 @@ public class AzureAdapter implements Adapter {
         }
     }
 
+    public void copyIfNotExists(String from, String to) {
+        BlobClient destBlob = containerClient.getBlobClient(adjustPath(to));
+        if (destBlob.exists()) {
+            return;
+        }
+        BlobClient sourceBlob = containerClient.getBlobClient(adjustPath(from));
+        destBlob.copyFromUrl(sourceBlob.getBlobUrl());
+    }
+
     @Override
     public File readTemp(DirectoryPathPolicy directoryPathPolicy, String path) throws Exception {
         String fullPath = Adapter.adjustSeparator(Paths.get(directoryPathPolicy.getTempDir(), path), directoryPathPolicy.getSeparator());
