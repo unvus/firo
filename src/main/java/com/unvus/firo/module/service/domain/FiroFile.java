@@ -1,6 +1,7 @@
 package com.unvus.firo.module.service.domain;
 
 import lombok.Data;
+import org.hibernate.annotations.Nationalized;
 import org.hibernate.annotations.Proxy;
 
 import javax.persistence.*;
@@ -28,6 +29,7 @@ public class FiroFile {
      */
     @NotNull
     @Size(max = 100)
+    @Nationalized
     @Column(name = "attach_ref_target")
     protected String refTarget;
 
@@ -50,6 +52,7 @@ public class FiroFile {
      */
     @NotNull
     @Size(max = 300)
+    @Nationalized
     @Column(name = "attach_display_name")
     protected String displayName;
 
@@ -58,6 +61,7 @@ public class FiroFile {
      */
     @NotNull
     @Size(max = 200)
+    @Nationalized
     @Column(name = "attach_saved_name")
     protected String savedName;
 
@@ -74,6 +78,7 @@ public class FiroFile {
      */
     @NotNull
     @Size(max = 100)
+    @Nationalized
     @Column(name = "attach_file_type")
     protected String fileType;
 
@@ -94,6 +99,7 @@ public class FiroFile {
      * 확장컬럼
      */
     @Size(max = 4000)
+    @Nationalized
     @Column(name = "attach_ext")
     protected String ext;
 
