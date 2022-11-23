@@ -170,7 +170,7 @@ public class FiroUploadAspect {
                     for (Object item : items) {
                         extractFiroDomainObject(item, targetMap, bodyItemList.get(idx++));
                     }
-                } else if (!field.getType().isPrimitive() && !field.getType().getPackage().getName().startsWith("java.")) {
+                } else if (!field.getType().isPrimitive() && field.getType().getPackage() != null && !field.getType().getPackage().getName().startsWith("java.")) {
                     // 필드가 자바 기본 타입이 아니라면 해당 값을 가지고 재귀호출
                     extractFiroDomainObject(PropertyUtils.getProperty(source, field.getName()), targetMap, ((Map) bodyMap).get(field.getName()));
                 }
