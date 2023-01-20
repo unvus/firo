@@ -9,6 +9,7 @@ import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.util.DateTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
+import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
@@ -141,7 +142,7 @@ public class FiroUtil {
                     SecureNameUtil.gen(firoCategory, domainId, index)
                 );
 
-            return directUrl + path.toString() + (cache == null?"":"?cache=" + cache);
+            return directUrl + path.toString().replace("\\", "/") + (cache == null?"":"?cache=" + cache);
         }else {
             return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
         }
@@ -167,7 +168,7 @@ public class FiroUtil {
 
         String directUrl = FiroRegistry.getDirectUrl(domain, category);
         if(directUrl != null) {
-            return directUrl + path.toString();
+            return directUrl + path.toString().replace( "\\", "/");
         }else {
             return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
         }
