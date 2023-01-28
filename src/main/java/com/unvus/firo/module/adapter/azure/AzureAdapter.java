@@ -125,7 +125,13 @@ public class AzureAdapter implements Adapter {
         fullPath = adjustPath(fullPath);
         BlobClient blobClient = containerClient.getBlobClient(fullPath);
         File tempFile = File.createTempFile("azure_read_", "_tmp");
-        blobClient.download(Files.newOutputStream(tempFile.toPath()));
+        try {
+            blobClient.download(Files.newOutputStream(tempFile.toPath()));
+        }catch (Exception e) {
+            log.error(e.getMessage());
+            return null;
+        }
+
         return tempFile;
     }
 
