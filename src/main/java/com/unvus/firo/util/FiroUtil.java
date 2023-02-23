@@ -133,21 +133,25 @@ public class FiroUtil {
         }
 
         String directUrl = FiroRegistry.getDirectUrl(domain, category);
-        if(directUrl != null) {
-            Path path =
-                Paths.get(
-                    domain,
-                    DateTimeFormatter.ofPattern("yyyy/MM").format(createdDt),
-                    domainId,
-                    SecureNameUtil.gen(firoCategory, domainId, index)
-                );
 
-            return directUrl + path.toString().replace("\\", "/") + (cache == null?"":"?cache=" + cache);
-        }else {
-            return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
+        try {
+            if(directUrl != null) {
+                Path path =
+                    Paths.get(
+                        domain,
+                        DateTimeFormatter.ofPattern("yyyy/MM").format(createdDt),
+                        domainId,
+                        SecureNameUtil.gen(firoCategory, domainId, index)
+                    );
+
+                return directUrl + path.toString().replace("\\", "/") + (cache == null?"":"?cache=" + cache);
+            }else {
+                return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
+            }
+        }catch(Exception e) {
+            log.error(e.getMessage());
+            return null;
         }
-
-
     }
 
     public static String directUrl(String domain, String category, String domainId, LocalDateTime createdDt, Integer index) throws Exception {
