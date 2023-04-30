@@ -3,23 +3,19 @@ package com.unvus.firo.util;
 import com.unvus.firo.annotation.FiroDomainDate;
 import com.unvus.firo.annotation.FiroDomainKey;
 import com.unvus.firo.module.service.FiroRegistry;
-import com.unvus.firo.module.service.domain.AttachBag;
 import com.unvus.firo.module.service.domain.FiroCategory;
 import com.unvus.firo.module.service.domain.FiroFile;
 import com.unvus.util.DateTools;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.beanutils.PropertyUtils;
-import org.apache.commons.lang3.StringUtils;
 
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.lang.reflect.InvocationTargetException;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
 import java.util.List;
 
 @Slf4j
@@ -149,7 +145,7 @@ public class FiroUtil {
                 return "/assets/firo/attach/view/" + domain + "/" + domainId + "/" + category + "/" + index;
             }
         }catch(Exception e) {
-            log.error(e.getMessage());
+            log.error("directUrl : " + e.getMessage() + ", createdDt : " + createdDt);
             return null;
         }
     }
