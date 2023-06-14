@@ -82,6 +82,7 @@ public class FiroApiResource {
         @RequestParam("refTarget") String refTarget,
         @RequestParam(value = "refTargetType", required = false) String refTargetType,
         @RequestParam(value = "filters", required = false) String filters,
+        @RequestParam(value = "useTempFileExtension", required = false) Boolean useTempFileExtension,
         @RequestParam("file") MultipartFile file,
         HttpServletRequest request,
         RedirectAttributes redirectAttributes) throws Exception {
@@ -101,7 +102,7 @@ public class FiroApiResource {
         Map<String, Object> item = new HashMap<>();
 
         try {
-            String filename = firoService.uploadTemp(file, FiroRegistry.get(refTarget, refTargetType), filterChain);
+            String filename = firoService.uploadTemp(file, FiroRegistry.get(refTarget, refTargetType), filterChain, useTempFileExtension == null?false:useTempFileExtension);
 
             item.put("name", filename);
             item.put("displayName", file.getOriginalFilename());

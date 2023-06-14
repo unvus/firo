@@ -65,13 +65,17 @@ public class FiroService {
      * @return uuid
      * @throws Exception
      */
-    public String uploadTemp(MultipartFile file, FiroCategory category, FiroFilterChain filterChain) throws Exception {
+    public String uploadTemp(MultipartFile file, FiroCategory category, FiroFilterChain filterChain, boolean useTempFileExtension) throws Exception {
 
         if (!file.isEmpty()) {
             InputStream is = file.getInputStream();
 
             try {
                 String uuid = UUID.randomUUID().toString();
+
+                if(useTempFileExtension) {
+                    uuid += "." + StringUtils.substringAfterLast(file.getOriginalFilename(), ".");
+                }
 
                 // 필터링을 위해 임시파일을 local 에 먼저 저장.
                 Adapter adapter = FiroRegistry.getAdapter(AdapterType.LOCAL);
