@@ -213,6 +213,7 @@ public class FiroService {
         attach.setFileType(firoFile.getFileType());
         attach.setExt(firoFile.getExt());
         attach.setCreatedDt(LocalDateTime.now());
+        attach.setCreatedBy(FiroUserContextHolder.createdBy.get());
 
         firoRepository.save(attach);
 
