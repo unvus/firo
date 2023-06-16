@@ -81,6 +81,18 @@ public class AzureAdapter implements Adapter {
         }
     }
 
+    public void rename(String from, String from2, String to, boolean keepFrom) throws Exception {
+        BlobClient sourceBlob = containerClient.getBlobClient(adjustPath(from));
+        if(sourceBlob.exists()) {
+            sourceBlob = containerClient.getBlobClient(adjustPath(from2));
+        }
+        BlobClient destBlob = containerClient.getBlobClient(adjustPath(to));
+        destBlob.copyFromUrl(sourceBlob.getBlobUrl());
+        if (destBlob.exists() && !keepFrom) {
+            sourceBlob.delete();
+        }
+    }
+
     public void copyIfNotExists(String from, String to) {
         BlobClient destBlob = containerClient.getBlobClient(adjustPath(to));
         if (destBlob.exists()) {
