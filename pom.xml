@@ -12,7 +12,7 @@
 
     <groupId>com.unvus.firo</groupId>
     <artifactId>firo</artifactId>
-    <version>0.0.4-bebecook-SNAPSHOT</version>
+    <version>0.0.4</version>
     <packaging>jar</packaging>
     <name>firo</name>
     <url>https://unvus.com/</url>
